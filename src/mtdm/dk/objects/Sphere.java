@@ -62,7 +62,7 @@ public class Sphere extends Object {
       -ray.getRz()*ray.getZ()
     );
     
-    // 
+    // Vi 
     double divident = 
     (
       +Math.pow(ray.getRy(),2) 
