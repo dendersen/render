@@ -14,6 +14,7 @@ public class Ray {
     this.Rx = Rx;
     this.Ry = Ry;
     this.Rz = Rz;
+    calc = t-> new Point(x+Rx*t,y+Ry*t,z+Rz*t);
   }
 
   public Point calculate(float t){

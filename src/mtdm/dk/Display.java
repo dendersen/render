@@ -34,7 +34,8 @@ public class Display extends PApplet{
     // renderObjects.add(new Plane(3,5f, 1, 0,new Color(0, 0, 255)));
     // renderObjects.add(new Plane(6,3f, 5, 0,new Color(255, 0, 0)));
     // renderObjects.add(new Plane(1,3f, 10, 3,new Color(0, 255, 0)));
-    renderObjects.add(new Sphere(new Point(0, 0, 15), 5, new Color(255, 0, 255)));
+    renderObjects.add(new Sphere(new Point(0, 3, 13), 10f, new Color(0, 0, 255)));
+    renderObjects.add(new Sphere(new Point(0, -4, 12), 10f, new Color(255, 0, 0)));
     background(0);
     strokeWeight(2);
   }

@@ -7,7 +7,7 @@ import mtdm.dk.Ray;
 public class Plane extends Object{
   float a,b,c,d;
   
-  public Plane(float a, float b, float c, float d,Color color){
+  public Plane(float a, float b, float c, float d, Color color){
     super(color);
     this.a = a;
     this.b = b;
