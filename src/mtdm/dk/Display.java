@@ -31,11 +31,10 @@ public class Display extends PApplet{
   
   @Override
   public void setup() {
-    // renderObjects.add(new Plane(3,5f, 1, 0,new Color(0, 0, 255)));
-    // renderObjects.add(new Plane(6,3f, 5, 0,new Color(255, 0, 0)));
-    // renderObjects.add(new Plane(1,3f, 10, 3,new Color(0, 255, 0)));
-    renderObjects.add(new Sphere(new Point(0, 3, 13), 10f, new Color(0, 0, 255)));
-    renderObjects.add(new Sphere(new Point(0, -4, 12), 10f, new Color(255, 0, 0)));
+    renderObjects.add(new Plane(4, -2, 2, -4020,new Color(255, 0, 0)));
+    renderObjects.add(new Plane(4,8, 6, -12120,new Color(0, 255, 0)));
+    // renderObjects.add(new Sphere(new Point(10, 10, 300), 300f, new Color(0, 0, 255)));
+    // renderObjects.add(new Sphere(new Point(0, -4, 12), 10f, new Color(255, 0, 0)));
     background(0);
     strokeWeight(2);
   }
@@ -83,7 +82,7 @@ public class Display extends PApplet{
         ArrayList<Point> options = new ArrayList<Point>();
         for (int y = -this.height/2; y < this.height/2; y++) {
           for (int x = -this.width/2; x < this.width/2; x++) {
-            Ray ray = new Ray(camera.getX(),camera.getY(),camera.getZ(),x / 16f, y / 16f, 1);
+            Ray ray = new Ray(camera.getX()+x,camera.getY()+y,camera.getZ(),1, 1, 1);
             for (int i = 0; i < this.renderObjects.size(); i++) {
               Point collisions = this.renderObjects.get(i).collision(ray);
               if(collisions == null){

@@ -17,8 +17,16 @@ public class Plane extends Object{
   
   @Override
   public Point collision(Ray ray) {
-    Float t = -this.a*ray.getRx()-this.b*ray.getRy()-this.c*ray.getRz();
-    if(!Float.isFinite(t) && t <= 0) return null;
+    // Float t =- 
+    // (this.a*ray.getX()+this.b*ray.getY()+this.c*ray.getZ()+this.d)
+    // /
+    // (this.a*ray.getRx()+this.b*ray.getRy()+this.c*ray.getRz());
+    
+    float tæller = this.a*ray.getX()+this.b*ray.getY()+this.c*ray.getZ()+this.d;
+    float nævner = this.a*ray.getRx()+this.b*ray.getRy()+this.c*ray.getRz();
+    Float t = -(tæller/nævner);
+    
+    if(!Float.isFinite(t) || t < 0) return null;
     
     Point collision = ray.calculate(t);
     collision.setColor(color);

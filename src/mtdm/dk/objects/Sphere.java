@@ -16,6 +16,8 @@ public class Sphere extends Object {
 
   @Override
   public Point collision(Ray ray) {
+    
+    // Vi finder det der svarer til sqrt(d)
     double sqrt = 
     Math.sqrt(
       -Math.pow(center.getX(),2)*Math.pow(ray.getRy(),2) 
@@ -52,6 +54,8 @@ public class Sphere extends Object {
       -Math.pow(ray.getRz(),2)*Math.pow(ray.getX(),2) 
       -Math.pow(ray.getRz(),2)*Math.pow(ray.getY(),2)
     );
+
+    // Vi finder det der svarer til -b
     double math = 
     (
       +center.getX()*ray.getRx() 
@@ -62,7 +66,7 @@ public class Sphere extends Object {
       -ray.getRz()*ray.getZ()
     );
     
-    // Vi 
+    // Vi finder det der svarer til 2a
     double divident = 
     (
       +Math.pow(ray.getRy(),2) 
@@ -72,26 +76,28 @@ public class Sphere extends Object {
     
     // Vi løser andengradsligningen t = (-b +- sqrt(d)) / 2a
     float t1 = (float) ((math - sqrt)/(divident)); 
-    float t2 = (float) ((math + sqrt)/(divident)); 
-
+    float t2 = (float) ((math + sqrt)/(divident));
+    
+    // We check whether or not we want the points to be displayed
     if(
-      Float.isFinite(t2) &&
+      Float.isFinite(t1) &&
       t2 > 0 && 
-      ray.calculate(t1).getDistance(Display.getCamera())>ray.calculate(t2).getDistance(Display.getCamera())
-    ){
-      Point collision = ray.calculate(t2);
-      collision.setColor(color);
-      return collision;
-    }
-    if(
-      Float.isFinite(t1) && 
-      t1 > 0
+      ray.calculate(t1).getDistance(Display.getCamera())
+      <=
+      ray.calculate(t2).getDistance(Display.getCamera())
     ){
       Point collision = ray.calculate(t1);
       collision.setColor(color);
       return collision;
     }
+    if(
+      Float.isFinite(t2) && 
+      t2 > 0
+    ){
+      Point collision = ray.calculate(t2);
+      collision.setColor(color);
+      return collision;
+    }
     return null;
   }
-  
 }
