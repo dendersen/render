@@ -1,22 +1,21 @@
 package mtdm.dk.objects;
 
 import mtdm.dk.Color;
-import mtdm.dk.Display;
-import mtdm.dk.Point;
+import mtdm.dk.Vector;
+import mtdm.dk.vision.Display;
 import mtdm.dk.Ray;
 
 public class Sphere extends Object {
-  private Point center;
+  private Vector center;
   private float radius;
-  public Sphere(Point center, float radius, Color color) {
+  public Sphere(Vector center, float radius, Color color) {
     super(color);
     this.center = center;
     this.radius = radius;
   }
 
   @Override
-  public Point collision(Ray ray) {
-    
+  public Vector collision(Ray ray) {
     // Vi finder det der svarer til sqrt(d)
     double sqrt = 
     Math.sqrt(
@@ -86,7 +85,7 @@ public class Sphere extends Object {
       <=
       ray.calculate(t2).getDistance(Display.getCamera())
     ){
-      Point collision = ray.calculate(t1);
+      Vector collision = ray.calculate(t1);
       collision.setColor(color);
       return collision;
     }
@@ -94,7 +93,7 @@ public class Sphere extends Object {
       Float.isFinite(t2) && 
       t2 > 0
     ){
-      Point collision = ray.calculate(t2);
+      Vector collision = ray.calculate(t2);
       collision.setColor(color);
       return collision;
     }

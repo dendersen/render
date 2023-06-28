@@ -2,7 +2,7 @@ package mtdm.dk.objects;
 
 import mtdm.dk.Ray;
 import mtdm.dk.Color;
-import mtdm.dk.Point;
+import mtdm.dk.Vector;
 
 public abstract class Object {
   protected Color color;
@@ -12,6 +12,6 @@ public abstract class Object {
   public Object(Color color){
     this.color = color;
   }
-  abstract public Point collision(Ray ray);
+  abstract public Vector collision(Ray ray);
   
 }

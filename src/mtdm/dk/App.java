@@ -1,5 +1,6 @@
 package mtdm.dk;
 
+import mtdm.dk.vision.Display;
 import processing.core.PApplet;
 
 public class App {

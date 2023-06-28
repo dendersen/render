@@ -5,7 +5,7 @@ import java.util.function.Function;
 public class Ray {
   private float  x, y, z;
   private float Rx,Ry,Rz;
-  private Function <Float,Point> calc = t-> new Point(x+Rx*t,y+Ry*t,z+Rz*t);
+  private Function <Float,Vector> calc = t-> new Vector(x+Rx*t,y+Ry*t,z+Rz*t);
 
   public Ray(float x0, float y0, float z0, float Rx, float Ry, float Rz){
     this.x = x0;
@@ -14,10 +14,10 @@ public class Ray {
     this.Rx = Rx;
     this.Ry = Ry;
     this.Rz = Rz;
-    calc = t-> new Point(x+Rx*t,y+Ry*t,z+Rz*t);
+    calc = t-> new Vector(x+Rx*t,y+Ry*t,z+Rz*t);
   }
 
-  public Point calculate(float t){
+  public Vector calculate(float t){
     return calc.apply(t);
   }
 
