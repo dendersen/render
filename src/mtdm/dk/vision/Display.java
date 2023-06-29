@@ -15,8 +15,7 @@ import pthreading.PThreadManager;
 public class Display extends PApplet{
   private ArrayList<Object> renderObjects= new ArrayList<Object>(); 
   Camera camera;
-  boolean start = true;
-  private static boolean frameSync = false;
+  private static boolean frameSync = true;
   private long frameCount = 0;
   private static Color[][] pixels;
   private PThreadManager painters;
@@ -24,12 +23,9 @@ public class Display extends PApplet{
   private int computeHeight = 500;
   private int painterWidth = 500;
   private int painterHeight = 500;
-
-
+  
   @Override
   public void draw() {
-    if(start){
-    }
     if(frameSync){
       camera.awaitFrame();
     }
@@ -44,7 +40,6 @@ public class Display extends PApplet{
     }else{
       camera.move(-10f,0,0);
     }
-    System.out.println(frameCount);
   }
   
   @Override
@@ -66,7 +61,6 @@ public class Display extends PApplet{
       }
     }
     camera.render(computeWidth, computeHeight, frameSync);
-    start = false;
   }
   
   @Override
