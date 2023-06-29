@@ -7,4 +7,7 @@ public class Color {
     this.g = g;
     this.b = b;
   }
+  public Color inverted(){
+    return new Color(255-this.r, 255-this.g, 255-this.b);
+  }
 }

@@ -81,12 +81,14 @@ public class Render extends Thread{
         }
       }
       if(frameSync){
+        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         frame = false;
       }
     }
   }
   
   public void startFrame(){
+    Thread.currentThread().setPriority(Thread.MAX_PRIORITY-2);
     frame = true;
   }
   public void endFrame(){

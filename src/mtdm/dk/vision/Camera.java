@@ -30,19 +30,18 @@ public class Camera {
   public void render(int threadWidth, int threadHeight, boolean frameSync){
     this.frameSync = frameSync;
     t = new Render[(int)(Math.ceil(width/(float)threadWidth)*Math.ceil(height/(float)threadHeight))];
-    int y = -height/2;
+
     int i = 0;
-    while(y < height/2){
-      int x = -width/2;
-      while(x < width/2){
+    for(int y = -height/2; y < height/2; y+=threadHeight){
+      for(int x = -width/2; x < width/2; x+=threadWidth){
         t[i] = new Render(x, y, x+threadWidth, y+threadHeight, width, height, renderObjects, this, g, frameSync);
         i++;
-        x+=threadWidth;
       }
-      x=-width/2;
-      y+=threadHeight;
     }
     for (Render render : t) {
+      if(!frameSync){
+        render.setPriority(3);
+      }
       render.start();
     }
   }
