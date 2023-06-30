@@ -9,6 +9,12 @@ public class Vector {
     this.y = y;
     this.z = z; 
   }
+    public Vector(float x, float y, float z, Color color){
+    this.x = x;
+    this.y = y;
+    this.z = z; 
+    this.color = color;
+  }
   
   public Vector add(Vector addition, boolean inPlace){
     if(inPlace) return add(addition);
@@ -24,6 +30,40 @@ public class Vector {
     return this;
   }
   
+  // Vector-scalar multiplication
+  public Vector multi(float t) {
+    return new Vector(this.x * t, this.y * t, this.z * t);
+  }
+
+  // Vector-vector multiplication (in-place)
+  public Vector multi(Vector v) {
+    this.x *= v.x;
+    this.y *= v.y;
+    this.z *= v.z;
+    return this;
+  }
+
+  public Vector div(Vector v, boolean inPlace){
+    if (inPlace) return div(v);
+    return new Vector(this.x / v.x, this.y / v.y, this.z / v.z);
+  }
+
+  private Vector div(Vector v){
+    this.x /= v.x;
+    this.y /= v.y;
+    this.z /= v.z;
+    return this;
+  }
+  public Vector div(float dividen){
+    return new Vector(this.x/dividen,this.y/dividen,this.z/dividen);
+  }
+
+  // Vector-vector multiplication (new vector)
+  public Vector multi(Vector v, boolean inPlace){
+    if(inPlace) return multi(v);
+    return new Vector(this.x * v.x, this.y * v.y, this.z * v.z);
+  }
+
   public Vector sub(Vector subtraction, boolean inPlace){
     if(inPlace) return sub(subtraction);
     return sub(this,subtraction);
@@ -48,12 +88,20 @@ public class Vector {
   public static Vector cross(Vector primary, Vector secondary){
     return primary.cross(secondary);
   }
+
+  public Vector mirrorReflect(Vector normal) {
+    // Assume V and N are already normalized
+    return this.sub(normal.multi(2 * this.dot(normal)),false);
+  } 
+
   public float dot(Vector complimentary){
     return this.x*complimentary.getX()+this.y*complimentary.getY()+this.z*complimentary.getZ();
   }
   public static float dot(Vector complimentary, Vector complimentary2){
     return complimentary.dot(complimentary2);
   }
+
+  // get the normal vector with the same direction
   public Vector normalize(boolean inPlace){
     if(inPlace) return normalize();
     return normal();
@@ -68,8 +116,13 @@ public class Vector {
   private Vector normal(){
     return copy().normalize(true);
   }
+
+  public float lengthSquared(){
+    return (float) (Math.pow(this.x,2)+Math.pow(this.y,2)+Math.pow(this.z,2));
+  }
+
   public float length(){
-    return (float)Math.sqrt(Math.pow(this.x,2)+Math.pow(this.y,2)+Math.pow(this.z,2));
+    return (float) Math.sqrt(lengthSquared());
   }
   public float getZ() {
     return z;

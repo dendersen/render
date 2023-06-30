@@ -2,47 +2,76 @@ package mtdm.dk;
 
 import java.util.function.Function;
 
-public class Ray {
-  private float  x, y, z;
-  private float Rx,Ry,Rz;
-  private Function <Float,Vector> calc = t-> new Vector(x+Rx*t,y+Ry*t,z+Rz*t);
+import mtdm.dk.vision.HitRecord;
 
-  public Ray(float x0, float y0, float z0, float Rx, float Ry, float Rz){
-    this.x = x0;
-    this.y = y0;
-    this.z = z0;
-    this.Rx = Rx;
-    this.Ry = Ry;
-    this.Rz = Rz;
-    calc = t-> new Vector(x+Rx*t,y+Ry*t,z+Rz*t);
+public class Ray {
+  private Vector origin;
+  private Vector direction;
+  private Function <Float,Vector> calc = t-> origin.add(direction.multi(t), false);
+  private Point pixel;
+
+  public Ray(Vector origin, Vector direction,Point pixel){
+    this.origin = origin;
+    this.direction = direction;
+    this.pixel = pixel;
+    calc = t-> origin.add(direction.multi(t), false);
   }
 
   public Vector calculate(float t){
     return calc.apply(t);
   }
 
+    public Vector calculate(float t, Color color){
+    Vector temp = calc.apply(t);
+    temp.setColor(color);
+    return temp;
+  }
+
+  public Vector getOrigin() {
+    return origin;
+  }
+
+  public Vector getDirection() {
+    return direction;
+  }
+
   public float getRx() {
-    return Rx;
+    return direction.getX();
   }
 
   public float getRy() {
-    return Ry;
+    return direction.getY();
   }
 
   public float getRz() {
-    return Rz;
+    return direction.getZ();
   }
 
   public float getX() {
-    return x;
+    return origin.getX();
   }
 
   public float getY() {
-    return y;
+    return origin.getY();
   }
 
   public float getZ() {
-    return z;
+    return origin.getZ();
   }
 
+  public Point getPixel(){
+    return pixel;
+  }
+
+  public void bounce(HitRecord hit){
+    this.origin = hit.getPoint();
+    this.direction = this.direction.mirrorReflect(hit.getNormal());
+  }
+
+	public Point makeColor(HitRecord[] hits) {
+		if(hits == null || hits[0] == null){
+      return pixel;
+    }
+    return pixel.setColor(hits[0].getColor());
+	}
 }

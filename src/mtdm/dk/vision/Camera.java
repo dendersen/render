@@ -2,6 +2,8 @@ package mtdm.dk.vision;
 
 import java.util.ArrayList;
 
+import mtdm.dk.Point;
+import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
 import processing.core.PGraphics;
@@ -16,7 +18,7 @@ public class Camera {
   private ArrayList<Object> renderObjects;
   private Vector location = new Vector(0, 0, 0);
   private float Rx = 0,Ry = 0,Rz = 0; //rotation angles
-  private Render[] t;
+  private Calculator[] t;
   boolean frameSync = false;
   private Vector target; // The point in 3D space that the camera looks at
 
@@ -27,22 +29,14 @@ public class Camera {
     this.renderObjects = renderObjects;
   }
 
-  public void render(int threadWidth, int threadHeight, boolean frameSync){
-    this.frameSync = frameSync;
-    t = new Render[(int)(Math.ceil(width/(float)threadWidth)*Math.ceil(height/(float)threadHeight))];
-
-    int i = 0;
-    for(int y = -height/2; y < height/2; y+=threadHeight){
-      for(int x = -width/2; x < width/2; x+=threadWidth){
-        t[i] = new Render(x, y, x+threadWidth, y+threadHeight, width, height, renderObjects, this, g, frameSync);
-        i++;
-      }
+  public void render(int threadCount, int maxHit){
+    t = new Calculator[threadCount];
+    Calculator.setRender(renderObjects,maxHit);
+    for (int i = 0; i < t.length; i++) {
+      t[i] = new Calculator(i);
     }
-    for (Render render : t) {
-      if(!frameSync){
-        render.setPriority(3);
-      }
-      render.start();
+    for (int i = 0; i < t.length; i++) {
+      t[i].start();
     }
   }
 
@@ -112,14 +106,55 @@ public class Camera {
   }
 
   public void awaitFrame(int millis) {
-    for (int i = 0; i < t.length; i++) {
-      while(t[i].getReady()){}
-    }
-    for (int i = 0; i < t.length; i++) {
-      t[i].startFrame();
+    while(Calculator.hasWork()){
+      try {
+        Thread.sleep(millis);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
     public void awaitFrame() {
     awaitFrame(10);
+  }
+  public void addFrame(boolean orthographic){
+    if(orthographic){
+      for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+          Calculator.addWork(new Ray(
+            location,new Vector(Rx,Ry,Rz),
+            new Point(x,y))
+          );
+        }
+      }
+      return;
+    }
+
+    float aspectRatio = width / height;
+    
+    float viewportHeight = 2f;
+    float viewportWidth = aspectRatio * viewportHeight;
+    float focalLength = 1.0f;
+
+    Vector origin = new Vector(0, 0, 0);
+    Vector horizontal = new Vector(viewportWidth, 0, 0);
+    Vector vertical = new Vector(0, viewportHeight, 0);
+    Vector lowerLeftCorner = origin.sub(
+      horizontal.div(2),false)
+      .sub(vertical.div(2),false)
+      .sub(new Vector(0, 0, focalLength)
+      ,false
+      );
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        Calculator.addWork(new Ray
+        (origin, 
+        lowerLeftCorner
+        .add(horizontal.multi(x),false)
+        .add(vertical.multi(y),false)
+        .sub(origin,false),
+        new Point(x,y)));
+      }
+    }
   }
 }

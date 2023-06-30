@@ -3,6 +3,7 @@ package mtdm.dk.objects;
 import mtdm.dk.Ray;
 import mtdm.dk.Color;
 import mtdm.dk.Vector;
+import mtdm.dk.vision.HitRecord;
 
 public abstract class Object {
   protected Color color;
@@ -12,6 +13,6 @@ public abstract class Object {
   public Object(Color color){
     this.color = color;
   }
-  abstract public Vector collision(Ray ray);
+  abstract public HitRecord collision(Ray ray);
   
 }
