@@ -2,18 +2,12 @@ package mtdm.dk;
 
 public class Vector {
   private float x,y,z;
-  private Color color = new Color(0,0,0);
+
   
   public Vector(float x, float y, float z){
     this.x = x;
     this.y = y;
     this.z = z; 
-  }
-    public Vector(float x, float y, float z, Color color){
-    this.x = x;
-    this.y = y;
-    this.z = z; 
-    this.color = color;
   }
   
   public Vector add(Vector addition, boolean inPlace){
@@ -135,12 +129,6 @@ public class Vector {
   }
   public Vector getNegative(){
     return new Vector(-this.x, -this.y, -this.z);
-  }
-  public void setColor(Color color){
-    this.color = color;
-  }
-  public Color getColor(){
-    return this.color;
   }
   public float getDistance(Vector point){
     return (float) Math.sqrt(Math.pow(point.getX()-this.getX(),2)+Math.pow(point.getY()-this.getY(),2)+Math.pow(point.getZ()-this.getZ(),2));

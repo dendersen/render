@@ -1,5 +1,6 @@
 package mtdm.dk.vision;
 import mtdm.dk.Color;
+import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 
 /**
@@ -9,6 +10,7 @@ public class HitRecord {
   private Vector point;
   private Vector normal;
   private float t;
+  private boolean frontFace;
   private Color color;
 
   // Constructor
@@ -39,6 +41,11 @@ public class HitRecord {
 
   public void setNormal(Vector normal) {
     this.normal = normal;
+  }
+
+  public void setFaceNormal(Ray ray, Vector outwardNormal) {
+    this.frontFace = Vector.dot(ray.getDirection(), outwardNormal) < 0;
+    this.normal = frontFace ? outwardNormal : outwardNormal.getNegative();
   }
 
   public void setT(Float t) {

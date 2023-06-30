@@ -2,10 +2,7 @@ package mtdm.dk.vision;
 
 import java.util.ArrayList;
 import mtdm.dk.objects.Object;
-import mtdm.dk.Color;
 import mtdm.dk.Ray;
-import mtdm.dk.Vector;
-import mtdm.dk.vision.HitRecord;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,28 +36,35 @@ public class Calculator extends Thread{
       if (currentWork == null) {
         continue;
       }
-      //calculates collisions
-      for (int work = 0; work < currentWork.length; work++) {
-        for(int currentHit = 0; currentHit < maxHit; currentHit++){
-          for (int i = 0; i < renderObjects.size(); i++) {
-            HitRecord collision = renderObjects.get(i).collision(currentWork[work]);
-            if(
-              hits[currentHit] == null
-              ||
-              currentWork[work].getOrigin().getDistance(collision.getPoint()) 
-              < 
-              currentWork[work].getOrigin().getDistance(hits[currentHit].getPoint())
-            ){
-              hits[currentHit] = collision;
+      // For each Ray in the currentWork array.
+      for (int i = 0; i < currentWork.length; i++) {
+        // Initialize a HitRecord object which will keep track of the closest collision that the ray encounters.
+        HitRecord collision = null;
+
+        for (int r = 0; r < renderObjects.size(); r++) {
+          // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
+          HitRecord tempCollision = renderObjects.get(r).collision(currentWork[i]);
+          
+          // If there was a collision...
+          if (tempCollision != null) {
+            // If it's the first collision we have found...
+            if (collision == null) {
+              // Record it and continue to the next iteration of the loop.
+              collision = tempCollision;
+              continue;
+            }
+
+            // If the current collision is closer than the previously recorded collision...
+            if (currentWork[i].getOrigin().getDistance(tempCollision.getPoint()) < currentWork[i].getOrigin().getDistance(collision.getPoint())) {
+              // Update our record of the closest collision.
+              collision = tempCollision;
             }
           }
-          if(hits[currentHit] == null){
-            Display.paint(currentWork[work].makeColor(hits), width, height);
-            break;
-          }
-          currentWork[work].bounce(hits[currentHit]);
         }
-        Display.paint(currentWork[work].makeColor(hits), width, height);
+
+        // Once all objects have been checked for collisions, call the paint() method of the Display class to display the result.
+        // Note: If no collision was found, 'collision' will be null. This situation should be handled inside the paint() method.
+        Display.paint(currentWork[i].makeColor(new HitRecord[] { collision }), width, height);
       }
     }
   }
@@ -87,7 +91,7 @@ public class Calculator extends Thread{
     return !workPool.isEmpty();
   } 
   
-  public static synchronized void setRender(ArrayList<Object> renderObjects, int maxHit){
+  public static void setRender(ArrayList<Object> renderObjects, int maxHit){
     Calculator.renderObjects = renderObjects;
     Calculator.maxHit = maxHit;
   }

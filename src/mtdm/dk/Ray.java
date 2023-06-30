@@ -10,7 +10,7 @@ public class Ray {
   private Function <Float,Vector> calc = t-> origin.add(direction.multi(t), false);
   private Point pixel;
 
-  public Ray(Vector origin, Vector direction,Point pixel){
+  public Ray(Vector origin, Vector direction, Point pixel){
     this.origin = origin;
     this.direction = direction;
     this.pixel = pixel;
@@ -23,7 +23,6 @@ public class Ray {
 
     public Vector calculate(float t, Color color){
     Vector temp = calc.apply(t);
-    temp.setColor(color);
     return temp;
   }
 
@@ -72,6 +71,6 @@ public class Ray {
 		if(hits == null || hits[0] == null){
       return pixel;
     }
-    return pixel.setColor(hits[0].getColor());
+    return pixel.setColor(hits[0].getColor().setColorToNormal(hits[0].getNormal())); // normally should be hits[0].getColor()
 	}
 }

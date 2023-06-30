@@ -29,22 +29,29 @@ public class Sphere extends Object {
     Vector normal1 = ray.calculate(t1).sub(center, false).normalize(false);
     Vector normal2 = ray.calculate(t2).sub(center, false).normalize(false);
     
-    if (discriminant < 0 || (!Float.isFinite(t1) && !Float.isFinite(t2))) {
+    if (discriminant < 0 || (!Float.isFinite(t1) && !Float.isFinite(t2)) || (t1 < 0 && t2 < 0)) {
       return null;
     }
     Vector collision1 = ray.calculate(t1);
-    if(!Float.isFinite(t2)){
-      return new HitRecord(collision1, normal1, t1, new Color(normal1));
+    if(!Float.isFinite(t2) || t2 < 0){
+      HitRecord hit = new HitRecord(collision1, normal1, t1, color);
+      hit.setFaceNormal(ray, normal1);
+      return hit;
     }
     Vector collision2 = ray.calculate(t2);
-    if(!Float.isFinite(t1)){
-      return new HitRecord(collision2, normal2, t2, new Color(normal2));
+    if(!Float.isFinite(t1) || t1 < 0){
+      HitRecord hit = new HitRecord(collision2, normal2, t2, color);
+      hit.setFaceNormal(ray, normal2);
+      return hit;
     }
     if(ray.getOrigin().getDistance(collision1) < ray.getOrigin().getDistance(collision2)){
-      return new HitRecord(collision1, normal1, t1, new Color(normal1));
+      HitRecord hit = new HitRecord(collision1, normal1, t1, color);
+      hit.setFaceNormal(ray, normal1);
+      return hit;
     }else{
-      return new HitRecord(collision2, normal2, t2, new Color(normal2));
+      HitRecord hit = new HitRecord(collision2, normal2, t2, color);
+      hit.setFaceNormal(ray, normal2);
+      return hit;
     }
-
   }
 }

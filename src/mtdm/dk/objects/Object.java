@@ -2,7 +2,6 @@ package mtdm.dk.objects;
 
 import mtdm.dk.Ray;
 import mtdm.dk.Color;
-import mtdm.dk.Vector;
 import mtdm.dk.vision.HitRecord;
 
 public abstract class Object {

@@ -2,11 +2,12 @@ package mtdm.dk.vision;
 
 import java.util.ArrayList;
 
+import mtdm.dk.Color;
 import mtdm.dk.Point;
+import mtdm.dk.RandomGenerator;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
-import processing.core.PGraphics;
 
 /**
  * The Camera class extends the Thread class and is responsible for 
@@ -14,26 +15,36 @@ import processing.core.PGraphics;
  */
 public class Camera {
   private int width, height;
-  private PGraphics g;
   private ArrayList<Object> renderObjects;
-  private Vector location = new Vector(0, 0, 0);
+  private Vector origin = new Vector(0, 0, 0);
+  private Vector lowerLeftCorner, horizontal, vertical;
   private float Rx = 0,Ry = 0,Rz = 0; //rotation angles
   private Calculator[] t;
   boolean frameSync = false;
   private Vector target; // The point in 3D space that the camera looks at
+  private int samplesPerPixel = 100;
 
-  public Camera(int w, int h, PGraphics g,ArrayList<Object> renderObjects){
+  public Camera(int w, int h, ArrayList<Object> renderObjects){
     this.width = w;
     this.height = h;
-    this.g = g;
     this.renderObjects = renderObjects;
+
+    float aspectRatio = width / height;
+
+    float viewportHeight = 2.0f;
+    float viewportWidth = aspectRatio * viewportHeight;
+    float focalLength = 1.0f;
+
+    this.horizontal = new Vector(viewportWidth, 0, 0);
+    this.vertical = new Vector(0, -viewportHeight, 0); // Y is flipped
+    this.lowerLeftCorner = origin.sub(horizontal.div(2), false).add(vertical.div(2), false).add(new Vector(0, 0, focalLength), false); // Z is flipped
   }
 
   public void render(int threadCount, int maxHit){
     t = new Calculator[threadCount];
-    Calculator.setRender(renderObjects,maxHit);
+    Calculator.setRender(renderObjects, maxHit);
     for (int i = 0; i < t.length; i++) {
-      t[i] = new Calculator(i);
+      t[i] = new Calculator(i, width, height);
     }
     for (int i = 0; i < t.length; i++) {
       t[i].start();
@@ -63,7 +74,7 @@ public class Camera {
     // If a target point has been set, ignore the Rx, Ry, Rz rotation angles and instead
     // calculate the direction vector from the camera location to the target point.
     if (target != null) {
-      Vector direction = target.sub(location, false);
+      Vector direction = target.sub(origin, false);
       return direction.normalize(true); // Normalize the direction vector to ensure it has unit length
     } else {
       // If no target point has been set, calculate the direction vector based on the rotation angles.
@@ -73,6 +84,10 @@ public class Camera {
       direction = rotateZ(direction, Rz);
       return direction;
     }
+  }
+
+  public Ray getRay(float u, float v, Point pixel) {
+    return new Ray(origin, lowerLeftCorner.add(horizontal.multi(u),false).add(vertical.multi(v), false).sub(origin, false), pixel);
   }
 
   private Vector rotateX(Vector v, float angle) {
@@ -98,11 +113,11 @@ public class Camera {
     this.Rz += Rz;
   }
   public void move(float Mx,float My,float Mz){
-    location.add(new Vector(Mx, My, Mz), true);
+    origin.add(new Vector(Mx, My, Mz), true);
   }
 
-  public Vector getLocation(){
-    return location;
+  public Vector getOrigin(){
+    return origin;
   }
 
   public void awaitFrame(int millis) {
@@ -119,42 +134,32 @@ public class Camera {
   }
   public void addFrame(boolean orthographic){
     if(orthographic){
-      for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-          Calculator.addWork(new Ray(
-            location,new Vector(Rx,Ry,Rz),
-            new Point(x,y))
-          );
+      for (int x = -width/2; x < width/2; x++) {
+        for (int y = -height/2; y < height/2; y++) {
+
+          Calculator.addWork(new Ray(new Vector(x,y,0),new Vector(0,0,1),new Point(x,y)));
         }
       }
       return;
     }
-
-    float aspectRatio = width / height;
-    
-    float viewportHeight = 2f;
-    float viewportWidth = aspectRatio * viewportHeight;
-    float focalLength = 1.0f;
-
-    Vector origin = new Vector(0, 0, 0);
-    Vector horizontal = new Vector(viewportWidth, 0, 0);
-    Vector vertical = new Vector(0, viewportHeight, 0);
-    Vector lowerLeftCorner = origin.sub(
-      horizontal.div(2),false)
-      .sub(vertical.div(2),false)
-      .sub(new Vector(0, 0, focalLength)
-      ,false
-      );
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        Calculator.addWork(new Ray
-        (origin, 
-        lowerLeftCorner
-        .add(horizontal.multi(x),false)
-        .add(vertical.multi(y),false)
-        .sub(origin,false),
-        new Point(x,y)));
+    for (int x = -width/2; x < width/2; x++) {
+      for (int y = -height/2; y < height/2; y++) {
+        float u = (x + width / 2) / (float) width;
+        float v = -(y + height / 2) / (float) height;
+        Vector direction = lowerLeftCorner.add(horizontal.multi(u), false).add(vertical.multi(v), false).sub(origin, false);
+        Calculator.addWork(new Ray(origin, direction, new Point(x, y)));
       }
     }
+  }
+
+  private void antialias(int x, int y) {
+    Color pixelColor = new Color(0, 0, 0);
+    for (int s = 0; s < samplesPerPixel; ++s) {
+      float u = (x + width / 2 + RandomGenerator.getRandom()) / (float) width;
+      float v = -(y + height / 2 + RandomGenerator.getRandom()) / (float) height;
+      Ray r = getRay(u, v, new Point(x, y));
+      pixelColor += rayColor(r, world);
+      }
+      write_color(std::cout, pixel_color, samples_per_pixel);
   }
 }
