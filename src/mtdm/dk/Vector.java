@@ -3,10 +3,14 @@ package mtdm.dk;
 public class Vector {
   private float x,y,z;
 
-  public Vector(){
-    this.x = (float)Math.random()*2-1;
-    this.y = (float)Math.random()*2-1;
-    this.z = (float)Math.random()*2-1;
+  public Vector(int min, int max){
+    while (true) {
+      this.x = (float)min + (float)(max-min)*(float)Math.random();
+      this.y = (float)min + (float)(max-min)*(float)Math.random();
+      this.z = (float)min + (float)(max-min)*(float)Math.random();;
+      if (this.lengthSquared() >= 1) continue;
+      break;
+    }
     this.normalize();
   }
   
@@ -14,6 +18,26 @@ public class Vector {
     this.x = x;
     this.y = y;
     this.z = z; 
+  }
+
+  public static Vector randomInUnitSphere(){
+    while (true) {
+      float x = (float)-1 + (float)(1-(-1))*(float)Math.random();
+      float y = (float)-1 + (float)(1-(-1))*(float)Math.random();
+      float z = (float)-1 + (float)(1-(-1))*(float)Math.random();
+      
+      Vector random = new Vector(x, y, z);
+      if (random.lengthSquared() >= 1) continue;
+      return random;
+    }
+  }
+
+  public static Vector randomInHemisphere(Vector normal){
+    Vector inUnitSphere = randomInUnitSphere();
+    if (Vector.dot(inUnitSphere, normal) > 0) {
+      return inUnitSphere;
+    }
+    return inUnitSphere.getNegative();
   }
   
   public Vector add(Vector addition, boolean inPlace){
@@ -85,6 +109,7 @@ public class Vector {
       this.getX()*secondary.getY()-this.getY()*secondary.getX()
     );
   }
+
   public static Vector cross(Vector primary, Vector secondary){
     return primary.cross(secondary);
   }

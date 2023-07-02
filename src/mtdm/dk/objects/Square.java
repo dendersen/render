@@ -19,9 +19,9 @@ public class Square extends Plane{
     this.corner3 = corner0.add(corner1.sub(corner0,false).add(corner2.sub(corner0, false), false), false) ;
   }
 
-  public HitRecord collision(Ray ray){
+  public HitRecord collision(Ray ray, float tMin, float tMax){
     // First, check for an intersection with the plane defined by the square.
-    HitRecord test = super.collision(ray);
+    HitRecord test = super.collision(ray, tMin, tMax);
     
     if (test == null)
       return null;

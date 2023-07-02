@@ -58,11 +58,9 @@ public class Ray {
 
   public void bounce(HitRecord hit){
     this.origin = hit.getPoint();
-    this.direction = new Vector();
+    Vector random = new Vector(-1, 1); // Could also be Vector.randomInHemisphere(hit.getNormal())
+    Vector target = hit.getPoint().add(hit.getNormal(), false).add(random, false); 
+    this.direction = target.sub(hit.getPoint(), false);
     // this.direction = this.direction.mirrorReflect(hit.getNormal());
   }
-
-
-  
-
 }

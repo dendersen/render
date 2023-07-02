@@ -29,7 +29,7 @@ public class Plane extends Object{
   }
   
   @Override
-  public HitRecord collision(Ray ray) {
+  public HitRecord collision(Ray ray, float tMin, float tMax) {
     float tæller = this.a*ray.getX()+this.b*ray.getY()+this.c*ray.getZ()+this.d;
     float nævner = this.a*ray.getRx()+this.b*ray.getRy()+this.c*ray.getRz();
     Float t = -(tæller/nævner);

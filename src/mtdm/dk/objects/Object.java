@@ -12,6 +12,6 @@ public abstract class Object {
   public Object(Color color){
     this.color = color;
   }
-  abstract public HitRecord collision(Ray ray);
+  abstract public HitRecord collision(Ray ray, float tMin, float tMax);
   
 }

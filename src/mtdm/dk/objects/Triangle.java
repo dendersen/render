@@ -17,9 +17,9 @@ public class Triangle extends Plane{
 
   }
   
-  public HitRecord collision(Ray ray){
+  public HitRecord collision(Ray ray, float tMin, float tMax){
     // First, check for an intersection with the plane defined by the triangle.
-    HitRecord test = super.collision(ray);
+    HitRecord test = super.collision(ray, tMin, tMax);
     
     if (test == null)
       return null;

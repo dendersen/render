@@ -32,43 +32,47 @@ public class Calculator extends Thread{
   @Override
   public void run(){
     while(!Thread.currentThread().isInterrupted()){
-      hits = new HitRecord[maxHit];
       currentWork = getWork();
       if (currentWork == null) {
         continue;
       }
       for (int i = 0; i < currentWork.length; i++) {
-        HitRecord[] collisions = new HitRecord[maxHit];
-        for (int j = 0; j < maxHit; j++) {
-          if(j > 0 && hits[j-1] == null){
-            continue;
-          }
-          for (int r = 0; r < renderObjects.size(); r++) {
-            
-            // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
-            HitRecord tempCollision = renderObjects.get(r).collision(currentWork[i].ray);
-            
-            // If there was a collision...
-            if (tempCollision != null) {
-              if (collisions[j] == null) {
-              collisions[j] = tempCollision;
-              continue;
-              }
-              if (currentWork[i].ray.getOrigin().getDistance(tempCollision.getPoint()) < currentWork[i].ray.getOrigin().getDistance(collisions[j].getPoint())) {
-                collisions[j] = tempCollision;
-              }
-            }
-          }
-          if(hits[j] != null){
-            currentWork[i].ray.bounce(collisions[i]);
-          }
-        }
-        // Once all objects have been checked for collisions, call the paint() method of the Display class to display the result.
-        // Note: If no collision was found, 'collision' will be null. This situation should be handled inside the paint() method.
-        currentWork[i].color = Color.fromHits(collisions, currentWork[i].ray);
+        hits = new HitRecord[maxHit];
+        hits = calculateWhatWasHitAfterwards(currentWork[i].ray, renderObjects, hits, 0, maxHit);
+        currentWork[i].color = Color.fromHits(hits, currentWork[i].ray);
         Display.paint(currentWork[i], width, height);
       }
     }
+  }
+
+  public static HitRecord[] calculateWhatWasHitAfterwards(Ray ray, ArrayList<Object> renderObjects, HitRecord[] hits, int hitCount, int maxHit) {
+    if (maxHit <= 0) {
+      return hits;
+    }
+    
+    HitRecord closestCollision = null;
+    HitRecord tempCollision = null;
+    for (int r = 0; r < renderObjects.size(); r++) {
+      // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
+      tempCollision = renderObjects.get(r).collision(ray, 0.001f, Float.MAX_VALUE);
+
+      // If there was a collision...
+      if (tempCollision != null) {
+        if (closestCollision == null) {
+          closestCollision = tempCollision;
+        }
+        if (ray.getOrigin().getDistance(tempCollision.getPoint()) < ray.getOrigin().getDistance(closestCollision.getPoint())) {
+          closestCollision = tempCollision;
+        }   
+      }
+    }
+    
+    if(closestCollision != null){
+      hits[hitCount] = closestCollision;
+      ray.bounce(closestCollision);
+      calculateWhatWasHitAfterwards(ray, renderObjects, hits, hitCount+1, maxHit-1);
+    } 
+    return hits;
   }
 
   public static void addWork(WorkUnit work){
@@ -102,3 +106,4 @@ public class Calculator extends Thread{
     return workPool.size();
   }
 }
+
