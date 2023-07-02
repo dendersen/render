@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import mtdm.dk.Color;
 import mtdm.dk.Point;
-import mtdm.dk.RandomGenerator;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
@@ -22,7 +21,7 @@ public class Camera {
   private Calculator[] t;
   boolean frameSync = false;
   private Vector target; // The point in 3D space that the camera looks at
-  private int samplesPerPixel = 100;
+  private float multiSampling;
 
   public Camera(int w, int h, ArrayList<Object> renderObjects){
     this.width = w;
@@ -40,9 +39,10 @@ public class Camera {
     this.lowerLeftCorner = origin.sub(horizontal.div(2), false).add(vertical.div(2), false).add(new Vector(0, 0, focalLength), false); // Z is flipped
   }
 
-  public void render(int threadCount, int maxHit){
+  public void render(int threadCount, int maxHit, int multiSampling){
     t = new Calculator[threadCount];
     Calculator.setRender(renderObjects, maxHit);
+    this.multiSampling = multiSampling;
     for (int i = 0; i < t.length; i++) {
       t[i] = new Calculator(i, width, height);
     }
@@ -86,8 +86,12 @@ public class Camera {
     }
   }
 
-  public Ray getRay(float u, float v, Point pixel) {
-    return new Ray(origin, lowerLeftCorner.add(horizontal.multi(u),false).add(vertical.multi(v), false).sub(origin, false), pixel);
+  public Ray getRay(float u, float v) {
+    Vector direction = lowerLeftCorner.
+    add(horizontal.multi(u), false).
+    add(vertical.multi(v), false).
+    sub(origin, false);
+    return new Ray(origin, direction);
   }
 
   private Vector rotateX(Vector v, float angle) {
@@ -122,6 +126,7 @@ public class Camera {
 
   public void awaitFrame(int millis) {
     while(Calculator.hasWork()){
+      System.out.print(Calculator.getWorkCount() + "         \r");
       try {
         Thread.sleep(millis);
       } catch (Exception e) {
@@ -135,31 +140,46 @@ public class Camera {
   public void addFrame(boolean orthographic){
     if(orthographic){
       for (int x = -width/2; x < width/2; x++) {
-        for (int y = -height/2; y < height/2; y++) {
-
-          Calculator.addWork(new Ray(new Vector(x,y,0),new Vector(0,0,1),new Point(x,y)));
+        for (int sX = 0; sX < multiSampling; sX++) {
+          for (int y = -height/2; y < height/2; y++) {
+            for (int Sy = 0; Sy < multiSampling; Sy++) {
+              Calculator.addWork(new WorkUnit(
+                new Ray(
+                  origin.add(new Vector(
+                    x+(sX-multiSampling/2)/multiSampling,
+                    y+(Sy-multiSampling/2)/multiSampling,
+                    0
+                  ),false),
+                  new Vector(0,0,1)
+                ), 
+                new Point(x+width/2,y+height/2), 
+                  sX,Sy
+                )
+              );
+            }
+          }
         }
       }
       return;
     }
     for (int x = -width/2; x < width/2; x++) {
       for (int y = -height/2; y < height/2; y++) {
-        float u = (x + width / 2) / (float) width;
-        float v = -(y + height / 2) / (float) height;
-        Vector direction = lowerLeftCorner.add(horizontal.multi(u), false).add(vertical.multi(v), false).sub(origin, false);
-        Calculator.addWork(new Ray(origin, direction, new Point(x, y)));
+        // float u = (x + width / 2) / (float) width;
+        // float v = -(y + height / 2) / (float) height;
+        // Vector direction = 
+        //   lowerLeftCorner.
+        //   add(horizontal.multi(u), false).
+        //   add(vertical.multi(v), false).
+        //   sub(origin, false);
+        for (int Sx = 0; Sx < multiSampling; Sx++) {
+          for (int Sy = 0; Sy < multiSampling; Sy++) {
+            float u = ((float) x + (float) width / 2f + (float) Math.random()) / (float)width; 
+            float v = -((float) y + (float) height / 2f + (float) Math.random()) / (float)height; 
+            Ray r = getRay(u, v);
+            Calculator.addWork(new WorkUnit(r, new Point(x+width/2,y+height/2), Sx, Sy));
+          }
+        }
       }
     }
-  }
-
-  private void antialias(int x, int y) {
-    Color pixelColor = new Color(0, 0, 0);
-    for (int s = 0; s < samplesPerPixel; ++s) {
-      float u = (x + width / 2 + RandomGenerator.getRandom()) / (float) width;
-      float v = -(y + height / 2 + RandomGenerator.getRandom()) / (float) height;
-      Ray r = getRay(u, v, new Point(x, y));
-      pixelColor += rayColor(r, world);
-      }
-      write_color(std::cout, pixel_color, samples_per_pixel);
   }
 }

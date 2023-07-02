@@ -3,36 +3,28 @@ package mtdm.dk.vision;
 import java.util.ArrayList;
 
 import mtdm.dk.Color;
-import mtdm.dk.Point;
-import mtdm.dk.RandomGenerator;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
-import mtdm.dk.objects.Plane;
 import mtdm.dk.objects.Sphere;
-import mtdm.dk.objects.Triangle;
 import processing.core.PApplet;
 import pthreading.PThreadManager;
-import mtdm.dk.Ray;
 
 public class Display extends PApplet{
   private ArrayList<Object> renderObjects= new ArrayList<Object>(); 
   Camera camera;
-  private long frameCount = 0;
   private static Color[][] pixels;
   private PThreadManager painters;
-  private int threadCount = 200;
-  private int maxHit = 1;
+  private int threadCount = 11;
+  private int maxHit = 50;
+  private static int multiSampling = 2;
+  private boolean orthographic = false;
+  private int screenHeigth = 1050;
+  private int screenWidth = 1050;
+  private long startTime;
   
-
   @Override
   public void draw() {
-    while(Calculator.hasWork()){
-      try {
-        Thread.sleep(15);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
+    camera.awaitFrame();
     // render();
     for (int y = 0; y < height; y++) {
       if(y < 0 || y >= height){
@@ -42,86 +34,58 @@ public class Display extends PApplet{
         if(x < 0 || x >= width){
           continue;
         }
-
-        Color color = pixels[x][y];
-        if(color != null){
-          g.stroke(color.r,color.g,color.b);
-        }else{
-          g.stroke(0);
+        Color[] colors = new Color[(int)Math.pow(multiSampling,2)];
+        for (int i = 0; i < multiSampling; i++) {
+          for (int j = 0; j < multiSampling; j++) {
+            colors[i*multiSampling+j] = pixels[x*multiSampling+i][y*multiSampling+j];
+          }
+        }
+        Color out = Color.average(colors);
+        if(out != null){
+          g.stroke(out.r,out.g,out.b);
         }
         g.point(x, y);
       }
     }
-    // painters.draw();
-    System.out.println(frameRate);
-    // frameCount++;
-    // if(frameCount%4000 < 1000){
-    //   camera.move(0,0,10f);
-    // }else if(frameCount%2000 < 2000){
-    //   camera.move(10f,0,0);
-    // }else if(frameCount%2000 < 3000){
-    //   camera.move(0,0,-10f);
-    // }else{
-    //   camera.move(-10f,0,0);
-    // }
-    camera.addFrame(false);
+    // camera.move(10, 0, 0);
+    camera.addFrame(orthographic);
+    System.out.println((double)(System.currentTimeMillis()-startTime)/(double)(frameCount+1)/1000 + " sec/frame");
   }
   
   @Override
   public void setup() {
-    // renderObjects.add(new Plane(4, -2, 2, -4020,new Color(255, 0, 0)));
-    // renderObjects.add(new Plane(new Vector(0, 0, 0), new Vector(0, 0, 1), new Vector(0, 0, 3),new Color(255, 0, 0)));
-    renderObjects.add(new Sphere(new Vector(0, 0, 1), 0.5f, new Color(0, 0, 255)));
-    // renderObjects.add(new Sphere(new Vector(0, 0, 3), 2f, new Color(0, 255, 0)));
-    // renderObjects.add(new Triangle(new Vector(-100, 1, 2), new Vector(4, 100, 50), new Vector(5, 7, 6), new Color(255, 255, 0)));
-    
+    renderObjects.add(new Sphere(new Vector(0, 0, 1), 0.5f, Color.Blue));
+    renderObjects.add(new Sphere(new Vector(0, 100.5f, 1), 100, Color.DefaultGround));
+    // renderObjects.add(new Sphere(new Vector(0, 0, 350), 300, Color.DefaultGround));
+    // renderObjects.add(new Sphere(new Vector(0, 600, 350), 300, Color.Green));
+    startTime = System.currentTimeMillis();
     background(0);
     strokeWeight(2);
     camera = new Camera(width, height, renderObjects);
-    // camera.lookAt(new Vector(0, 0, 0));
-    pixels = new Color[width][height];
-    // painters = new PThreadManager(this);
-    // for(int y = -height/2; y < height/2; y += painterHeight){
-    //   for(int x = -width/2; x < width/2; x+=painterWidth){
-    //     Painter painter = new Painter(pixels,this,x,x+painterWidth,y,y+painterHeight,width,height);
-    //     painters.addThread(painter);
-    //   }
-    // }
-    camera.render(threadCount,maxHit);
+    pixels = new Color[width*multiSampling][height*multiSampling];
+    camera.render(threadCount,maxHit,multiSampling);
+    camera.addFrame(orthographic);
   }
   
   @Override
   public void settings() {
-    size(1000, 1000);
+    size(screenWidth, screenHeigth);
   }
   public static Vector getCamera(){
     return new Vector(0, 0, 0); //temporary
   }
-  public static void paint(Point pixel, int width, int height){
-    if(pixel.getX()+width/2 < 0  || pixel.getX()+width/2 > width){
-      return;
-    }
-    if(pixel.getY()+height/2 < 0  || pixel.getY()+height/2 > height){
-      return;
-    }
-    pixels[pixel.getX()+width/2][pixel.getY()+height/2] = pixel.getColor();
-  }
 
-  // private void render(){
-  //   Ray[][] rays = new Ray[width][height]; 
-  //   for (int x = -width/2; x < width/2; x++) {
-  //     for (int y = -height/2; y < height/2; y++) {
-  //       rays[x+width/2][y+height/2] = new Ray(new Vector(x,y,0),new Vector(0,0,1),new Point(x,y));
-  //     }
-  //   }
-    
-  //   for (int i = 0; i < rays.length; i++) {
-  //     for (int j = 0; j < rays[0].length; j++) {
-  //       for (int o = 0; o < renderObjects.size(); o++) {
-  //         HitRecord collision = renderObjects.get(o).collision(rays[i][j]);
-  //         paint(rays[i][j].makeColor(new HitRecord[]{collision}),width,height);
-  //       }
-  //     }
-  //   }
-  // }
+  public static void paint(WorkUnit Work, int width, int height){
+    if(Work.pixel.getX() < 0  || Work.pixel.getX() > width){
+      return;
+    }
+    if(Work.pixel.getY() < 0  || Work.pixel.getY() > height){
+      return;
+    }
+    pixels[
+      Work.pixel.getX()*multiSampling + Work.sampleX
+    ][
+      Work.pixel.getY()*multiSampling + Work.sampleY
+    ] = Work.color;
+  }
 }

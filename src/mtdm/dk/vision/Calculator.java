@@ -2,6 +2,7 @@ package mtdm.dk.vision;
 
 import java.util.ArrayList;
 import mtdm.dk.objects.Object;
+import mtdm.dk.Color;
 import mtdm.dk.Ray;
 
 import java.util.concurrent.BlockingQueue;
@@ -12,11 +13,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Calculators
  */
 public class Calculator extends Thread{
-  private static BlockingQueue<Ray> workPool = new LinkedBlockingQueue<>();
+  private static BlockingQueue<WorkUnit> workPool = new LinkedBlockingQueue<>();
   private static ArrayList<Object> renderObjects;
   private static int maxHit;
   private int ID;
-  private Ray currentWork[];
+  private WorkUnit[] currentWork;
   private HitRecord[] hits;
   private int width, height;
   
@@ -36,47 +37,48 @@ public class Calculator extends Thread{
       if (currentWork == null) {
         continue;
       }
-      // For each Ray in the currentWork array.
       for (int i = 0; i < currentWork.length; i++) {
-        // Initialize a HitRecord object which will keep track of the closest collision that the ray encounters.
-        HitRecord collision = null;
-
-        for (int r = 0; r < renderObjects.size(); r++) {
-          // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
-          HitRecord tempCollision = renderObjects.get(r).collision(currentWork[i]);
-          
-          // If there was a collision...
-          if (tempCollision != null) {
-            // If it's the first collision we have found...
-            if (collision == null) {
-              // Record it and continue to the next iteration of the loop.
-              collision = tempCollision;
+        HitRecord[] collisions = new HitRecord[maxHit];
+        for (int j = 0; j < maxHit; j++) {
+          if(j > 0 && hits[j-1] == null){
+            continue;
+          }
+          for (int r = 0; r < renderObjects.size(); r++) {
+            
+            // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
+            HitRecord tempCollision = renderObjects.get(r).collision(currentWork[i].ray);
+            
+            // If there was a collision...
+            if (tempCollision != null) {
+              if (collisions[j] == null) {
+              collisions[j] = tempCollision;
               continue;
-            }
-
-            // If the current collision is closer than the previously recorded collision...
-            if (currentWork[i].getOrigin().getDistance(tempCollision.getPoint()) < currentWork[i].getOrigin().getDistance(collision.getPoint())) {
-              // Update our record of the closest collision.
-              collision = tempCollision;
+              }
+              if (currentWork[i].ray.getOrigin().getDistance(tempCollision.getPoint()) < currentWork[i].ray.getOrigin().getDistance(collisions[j].getPoint())) {
+                collisions[j] = tempCollision;
+              }
             }
           }
+          if(hits[j] != null){
+            currentWork[i].ray.bounce(collisions[i]);
+          }
         }
-
         // Once all objects have been checked for collisions, call the paint() method of the Display class to display the result.
         // Note: If no collision was found, 'collision' will be null. This situation should be handled inside the paint() method.
-        Display.paint(currentWork[i].makeColor(new HitRecord[] { collision }), width, height);
+        currentWork[i].color = Color.fromHits(collisions, currentWork[i].ray);
+        Display.paint(currentWork[i], width, height);
       }
     }
   }
 
-  public static void addWork(Ray work){
+  public static void addWork(WorkUnit work){
     if(work == null) return;
     workPool.add(work);
   }
   
-  private static Ray[] getWork(){
+  private static WorkUnit[] getWork(){
     try {
-      Ray[] work = new Ray[10];
+      WorkUnit[] work = new WorkUnit[10];
       for (int i = 0; i < 10; i++) {
         work[i] = workPool.take();
       }
@@ -94,5 +96,9 @@ public class Calculator extends Thread{
   public static void setRender(ArrayList<Object> renderObjects, int maxHit){
     Calculator.renderObjects = renderObjects;
     Calculator.maxHit = maxHit;
+  }
+
+  public static int getWorkCount() {
+    return workPool.size();
   }
 }

@@ -3,6 +3,12 @@ package mtdm.dk;
 public class Vector {
   private float x,y,z;
 
+  public Vector(){
+    this.x = (float)Math.random()*2-1;
+    this.y = (float)Math.random()*2-1;
+    this.z = (float)Math.random()*2-1;
+    this.normalize();
+  }
   
   public Vector(float x, float y, float z){
     this.x = x;
