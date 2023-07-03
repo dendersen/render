@@ -39,6 +39,12 @@ public class Vector {
     }
     return inUnitSphere.getNegative();
   }
+
+  public boolean nearZero() {
+    // Return true if the vector is close to zero in all dimensions.
+    final double s = 1e-8;
+    return (Math.abs(this.x) < s) && (Math.abs(this.y) < s) && (Math.abs(this.z) < s);
+  }
   
   public Vector add(Vector addition, boolean inPlace){
     if(inPlace) return add(addition);

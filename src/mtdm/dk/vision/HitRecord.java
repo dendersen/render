@@ -2,6 +2,7 @@ package mtdm.dk.vision;
 import mtdm.dk.Color;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
+import mtdm.dk.objects.Material.Material;
 
 /**
  * HitRecord
@@ -9,14 +10,16 @@ import mtdm.dk.Vector;
 public class HitRecord {
   private Vector point;
   private Vector normal;
+  private Material matPtr;
   private float t;
   private boolean frontFace;
   private Color color;
 
   // Constructor
-  public HitRecord(Vector p, Vector normal, float t, Color color) {
+  public HitRecord(Vector p, Vector normal, float t, Color color, Material material) {
     this.point = p;
     this.normal = normal;
+    this.matPtr = material;
     this.t = t;
     this.color = color;
   }

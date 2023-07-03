@@ -2,19 +2,22 @@ package mtdm.dk.objects;
 
 import mtdm.dk.Color;
 import mtdm.dk.Vector;
+import mtdm.dk.objects.Material.Material;
 import mtdm.dk.vision.HitRecord;
 import mtdm.dk.Ray;
 
 public class Plane extends Object{
   float a,b,c,d;
   Vector normal;
+  Material material;
   
-  public Plane(float a, float b, float c, float d, Color color){
+  public Plane(float a, float b, float c, float d, Color color, Material material){
     super(color);
     this.a = a;
     this.b = b;
     this.c = c;
     this.d = d;
+    this.material = material;
   }
 
   public Plane(Vector A, Vector B, Vector C, Color color){
@@ -37,6 +40,6 @@ public class Plane extends Object{
     if(!Float.isFinite(t) || t < 0) return null;
     
     Vector collision = ray.calculate(t);
-    return new HitRecord(collision, this.normal, t, color);
+    return new HitRecord(collision, this.normal, t, color, this.material);
   }
 }

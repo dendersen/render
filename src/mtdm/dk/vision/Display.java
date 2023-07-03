@@ -6,6 +6,8 @@ import mtdm.dk.Color;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
 import mtdm.dk.objects.Sphere;
+import mtdm.dk.objects.Material.Material;
+import mtdm.dk.objects.Material.Metal;
 import processing.core.PApplet;
 import pthreading.PThreadManager;
 
@@ -54,8 +56,8 @@ public class Display extends PApplet{
   
   @Override
   public void setup() {
-    renderObjects.add(new Sphere(new Vector(0, 0, 1), 0.5f, Color.Blue));
-    renderObjects.add(new Sphere(new Vector(0, 100.5f, 1), 100, Color.DefaultGround));
+    renderObjects.add(new Sphere(new Vector(0, 0, 1), 0.5f, Color.Blue, new Metal(Color.Blue)));
+    renderObjects.add(new Sphere(new Vector(0, 100.5f, 1), 100, Color.DefaultGround, new Metal(Color.DefaultGround)));
     // renderObjects.add(new Sphere(new Vector(0, 0, 350), 300, Color.DefaultGround));
     // renderObjects.add(new Sphere(new Vector(0, 600, 350), 300, Color.Green));
     startTime = System.currentTimeMillis();

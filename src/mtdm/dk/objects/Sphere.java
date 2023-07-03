@@ -2,16 +2,19 @@ package mtdm.dk.objects;
 
 import mtdm.dk.Color;
 import mtdm.dk.Vector;
+import mtdm.dk.objects.Material.Material;
 import mtdm.dk.vision.HitRecord;
 import mtdm.dk.Ray;
 
 public class Sphere extends Object {
   private Vector center;
   private float radius;
-  public Sphere(Vector center, float radius, Color color) {
+  private Material material;
+  public Sphere(Vector center, float radius, Color color, Material material) {
     super(color);
     this.center = center;
     this.radius = radius;
+    this.material = material;
   }
 
   @Override
@@ -36,7 +39,7 @@ public class Sphere extends Object {
     }
 
     Vector normal = ray.calculate(root).sub(center, false).normalize(false);
-    HitRecord hit = new HitRecord(ray.calculate(root, color), normal, root, color);
+    HitRecord hit = new HitRecord(ray.calculate(root, color), normal, root, color, material);
     hit.setFaceNormal(ray, normal);
     return hit;
   }
