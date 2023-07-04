@@ -1,6 +1,5 @@
 package mtdm.dk.objects.Material;
 
-
 import mtdm.dk.Color;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
@@ -14,13 +13,18 @@ public class Lambertian implements Material {
   }
 
   @Override
-  public boolean scatter(Ray rIn, HitRecord rec, Color attenuation, Ray scattered) {
+  public ScatterResult scatter(Ray rIn, HitRecord rec, Color attenuation) {
     Vector scatterDirection = rec.getNormal().add(new Vector(-1, 1), false);
     if (scatterDirection.nearZero()) {
       scatterDirection = rec.getNormal();
     }
-    scattered = new Ray(rec.getPoint(), scatterDirection);
+    Ray scattered = new Ray(rec.getPoint(), scatterDirection);
     attenuation = albedo;
-    return true;
+    return new ScatterResult(scattered, attenuation);
+  }
+
+  @Override
+  public Color getColor() {
+    return albedo;
   }
 }

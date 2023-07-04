@@ -2,7 +2,9 @@ package mtdm.dk;
 
 import java.util.function.Function;
 
+import mtdm.dk.objects.Material.ScatterResult;
 import mtdm.dk.vision.HitRecord;
+import mtdm.dk.vision.WorkUnit;
 
 public class Ray {
   private Vector origin;
@@ -56,11 +58,14 @@ public class Ray {
     return origin.getZ();
   }
 
-  public void bounce(HitRecord hit){
-    this.origin = hit.getPoint();
-    Vector random = new Vector(-1, 1); // Could also be Vector.randomInHemisphere(hit.getNormal())
-    Vector target = hit.getPoint().add(hit.getNormal(), false).add(random, false); 
-    this.direction = target.sub(hit.getPoint(), false);
-    // this.direction = this.direction.mirrorReflect(hit.getNormal());
+  public ScatterResult bounce(HitRecord rec, WorkUnit workUnit){
+    ScatterResult result = rec.getMatPtr().scatter(workUnit.ray, rec, workUnit.color);
+    return result;
+
+    // this.origin = rec.getPoint();
+    // Vector random = new Vector(-1, 1); // Could also be Vector.randomInHemisphere(rec.getNormal())
+    // Vector target = rec.getPoint().add(rec.getNormal(), false).add(random, false); 
+    // this.direction = target.sub(rec.getPoint(), false);
+    // // this.direction = this.direction.mirrorReflect(rec.getNormal());
   }
 }

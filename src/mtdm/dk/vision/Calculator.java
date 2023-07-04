@@ -2,6 +2,7 @@ package mtdm.dk.vision;
 
 import java.util.ArrayList;
 import mtdm.dk.objects.Object;
+import mtdm.dk.objects.Material.ScatterResult;
 import mtdm.dk.Color;
 import mtdm.dk.Ray;
 
@@ -20,6 +21,7 @@ public class Calculator extends Thread{
   private WorkUnit[] currentWork;
   private HitRecord[] hits;
   private int width, height;
+  private static int multiSampling;
   
   public Calculator(int ID, int width, int height){
     this.width = width;
@@ -39,7 +41,7 @@ public class Calculator extends Thread{
       for (int i = 0; i < currentWork.length; i++) {
         hits = new HitRecord[maxHit];
         hits = calculateWhatWasHitAfterwards(currentWork[i].ray, renderObjects, hits, 0, maxHit);
-        currentWork[i].color = Color.fromHits(hits, currentWork[i].ray);
+        currentWork[i].color = Color.fromHits(hits, currentWork[i].ray, multiSampling*2);
         Display.paint(currentWork[i], width, height);
       }
     }
@@ -47,7 +49,7 @@ public class Calculator extends Thread{
 
   public static HitRecord[] calculateWhatWasHitAfterwards(Ray ray, ArrayList<Object> renderObjects, HitRecord[] hits, int hitCount, int maxHit) {
     if (maxHit <= 0) {
-      return hits;
+      return null;
     }
     
     HitRecord closestCollision = null;
@@ -68,9 +70,14 @@ public class Calculator extends Thread{
     }
     
     if(closestCollision != null){
-      hits[hitCount] = closestCollision;
-      ray.bounce(closestCollision);
-      calculateWhatWasHitAfterwards(ray, renderObjects, hits, hitCount+1, maxHit-1);
+      ScatterResult result = closestCollision.getMatPtr().scatter(ray, closestCollision, closestCollision.getColor());
+      if (result != null) {
+        hits[hitCount] = closestCollision;
+        hits[hitCount].setColor(result.attenuation);
+        calculateWhatWasHitAfterwards(result.scattered, renderObjects, hits, hitCount+1, maxHit-1);
+      } else {
+        return null;
+      }
     } 
     return hits;
   }
@@ -97,9 +104,10 @@ public class Calculator extends Thread{
     return !workPool.isEmpty();
   } 
   
-  public static void setRender(ArrayList<Object> renderObjects, int maxHit){
+  public static void setRender(ArrayList<Object> renderObjects, int maxHit, int multiSampling){
     Calculator.renderObjects = renderObjects;
     Calculator.maxHit = maxHit;
+    Calculator.multiSampling = multiSampling;
   }
 
   public static int getWorkCount() {

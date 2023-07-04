@@ -1,8 +1,6 @@
 package mtdm.dk.vision;
 
 import java.util.ArrayList;
-
-import mtdm.dk.Color;
 import mtdm.dk.Point;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
@@ -41,7 +39,7 @@ public class Camera {
 
   public void render(int threadCount, int maxHit, int multiSampling){
     t = new Calculator[threadCount];
-    Calculator.setRender(renderObjects, maxHit);
+    Calculator.setRender(renderObjects, maxHit, multiSampling);
     this.multiSampling = multiSampling;
     for (int i = 0; i < t.length; i++) {
       t[i] = new Calculator(i, width, height);

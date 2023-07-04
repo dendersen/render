@@ -25,6 +25,10 @@ public class HitRecord {
   }
 
   // Getters
+  public Material getMatPtr() {
+    return this.matPtr;
+  }
+
   public Vector getPoint() {
     return this.point;
   }
@@ -44,6 +48,10 @@ public class HitRecord {
 
   public void setNormal(Vector normal) {
     this.normal = normal;
+  }
+
+  public void setColor(Color color) {
+    this.color = color;
   }
 
   public void setFaceNormal(Ray ray, Vector outwardNormal) {

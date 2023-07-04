@@ -1,6 +1,5 @@
 package mtdm.dk.objects;
 
-import mtdm.dk.Color;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Material.Material;
 import mtdm.dk.vision.HitRecord;
@@ -10,8 +9,8 @@ public class Sphere extends Object {
   private Vector center;
   private float radius;
   private Material material;
-  public Sphere(Vector center, float radius, Color color, Material material) {
-    super(color);
+  public Sphere(Vector center, float radius, Material material) {
+    super(material.getColor());
     this.center = center;
     this.radius = radius;
     this.material = material;

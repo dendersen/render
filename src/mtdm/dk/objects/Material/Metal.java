@@ -5,17 +5,23 @@ import mtdm.dk.Vector;
 import mtdm.dk.vision.HitRecord;
 
 public class Metal implements Material {
-    public Color albedo;
+  public Color albedo;
 
-    public Metal(Color a) {
-      this.albedo = a;
-    }
+  public Metal(Color a) {
+    this.albedo = a;
+  }
 
-    @Override
-    public boolean scatter(Ray rIn, HitRecord rec, Color attenuation, Ray scattered) {
-        Vector reflected = rIn.getDirection().normalize(false).mirrorReflect(rec.getNormal());
-        scattered = new Ray(rec.getPoint(), reflected);
-        attenuation = albedo;
-        return (scattered.getDirection().dot(rec.getNormal()) > 0);
-    }
+  @Override
+  public ScatterResult scatter(Ray rIn, HitRecord rec, Color attenuation) {
+    Vector reflected = Vector.reflect(rIn.getDirection().normalize(false), rec.getNormal());
+    Ray scattered = new Ray(rec.getPoint(), reflected);
+    attenuation = albedo;
+    boolean scatteredValid = (scattered.getDirection().dot(rec.getNormal()) > 0);
+    return scatteredValid ? new ScatterResult(scattered, attenuation) : null;
+  }
+
+  @Override
+  public Color getColor() {
+    return albedo;
+  }
 }

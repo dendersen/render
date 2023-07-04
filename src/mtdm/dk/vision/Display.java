@@ -6,19 +6,18 @@ import mtdm.dk.Color;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
 import mtdm.dk.objects.Sphere;
+import mtdm.dk.objects.Material.Lambertian;
 import mtdm.dk.objects.Material.Material;
 import mtdm.dk.objects.Material.Metal;
 import processing.core.PApplet;
-import pthreading.PThreadManager;
 
 public class Display extends PApplet{
   private ArrayList<Object> renderObjects= new ArrayList<Object>(); 
   Camera camera;
   private static Color[][] pixels;
-  private PThreadManager painters;
-  private int threadCount = 11;
+  private int threadCount = 200;
   private int maxHit = 50;
-  private static int multiSampling = 2;
+  private static int multiSampling = 4;
   private boolean orthographic = false;
   private int screenHeigth = 1050;
   private int screenWidth = 1050;
@@ -56,10 +55,18 @@ public class Display extends PApplet{
   
   @Override
   public void setup() {
-    renderObjects.add(new Sphere(new Vector(0, 0, 1), 0.5f, Color.Blue, new Metal(Color.Blue)));
-    renderObjects.add(new Sphere(new Vector(0, 100.5f, 1), 100, Color.DefaultGround, new Metal(Color.DefaultGround)));
-    // renderObjects.add(new Sphere(new Vector(0, 0, 350), 300, Color.DefaultGround));
-    // renderObjects.add(new Sphere(new Vector(0, 600, 350), 300, Color.Green));
+    // Scale color values by 255 for each material
+    Material material_ground = new Lambertian(new Color((int) (0.8*255), (int) (0.8*255), (int) (0.0*255)));
+    Material material_center = new Lambertian(new Color((int) (0.7*255), (int) (0.3*255), (int) (0.3*255)));
+    Material material_left   = new Metal(new Color((int) (0.8*255), (int) (0.8*255), (int) (0.8*255)));
+    Material material_right  = new Metal(new Color((int) (0.8*255), (int) (0.6*255), (int) (0.2*255)));
+
+    // Add the spheres to your object list
+    renderObjects.add(new Sphere(new Vector( 0.0f, 100.5f, 1.0f), 100.0f, material_ground));
+    renderObjects.add(new Sphere(new Vector( 0.0f,    0.0f, 1.0f),   0.5f, material_center));
+    renderObjects.add(new Sphere(new Vector(-1.0f,    0.0f, 1.0f),   0.5f, material_left));
+    renderObjects.add(new Sphere(new Vector( 1.0f,    0.0f, 1.0f),   0.5f, material_right));
+
     startTime = System.currentTimeMillis();
     background(0);
     strokeWeight(2);
