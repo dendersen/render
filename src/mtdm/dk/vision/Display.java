@@ -17,10 +17,10 @@ public class Display extends PApplet{
   private static Color[][] pixels;
   private int threadCount = 200;
   private int maxHit = 50;
-  private static int multiSampling = 4;
+  private static int multiSampling = 12;
   private boolean orthographic = false;
-  private int screenHeigth = 1050;
-  private int screenWidth = 1050;
+  private int screenHeigth = 400;
+  private int screenWidth = 400;
   private long startTime;
   
   @Override
@@ -57,9 +57,9 @@ public class Display extends PApplet{
   public void setup() {
     // Scale color values by 255 for each material
     Material material_ground = new Lambertian(new Color((int) (0.8*255), (int) (0.8*255), (int) (0.0*255)));
-    Material material_center = new Lambertian(new Color((int) (0.7*255), (int) (0.3*255), (int) (0.3*255)));
-    Material material_left   = new Metal(new Color((int) (0.8*255), (int) (0.8*255), (int) (0.8*255)));
-    Material material_right  = new Metal(new Color((int) (0.8*255), (int) (0.6*255), (int) (0.2*255)));
+    Material material_center = new Lambertian(new Color(255, 0, 0));
+    Material material_left   = new Metal(new Color((int) (0.8*255), (int) (0.8*255), (int) (0.8*255)), 0.3f);
+    Material material_right  = new Metal(new Color((int) (0.8*255), (int) (0.6*255), (int) (0.2*255)), 1.0f);
 
     // Add the spheres to your object list
     renderObjects.add(new Sphere(new Vector( 0.0f, 100.5f, 1.0f), 100.0f, material_ground));
