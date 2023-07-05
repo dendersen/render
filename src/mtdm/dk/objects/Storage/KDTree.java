@@ -1,7 +1,8 @@
 package mtdm.dk.objects.Storage;
 
 import mtdm.dk.objects.Object;
-import mtdm.dk.Vector;
+import mtdm.dk.vision.HitRecord;
+import mtdm.dk.Ray;
 import java.util.List;
 
 public class KDTree {
@@ -30,38 +31,34 @@ public class KDTree {
     return node;
   }
 
-  public Object nearestNeighborSearch(Vector point) {
-    return nearestNeighborSearch(root, point, root.obj);
-  } 
+  public HitRecord nearestNeighborSearch(Ray ray, float min, float max) {
+    return nearestNeighborSearch(root, ray, min, max, null);
+  }
 
-  private Object nearestNeighborSearch(KDNode node, Vector point, Object best) {
+  private HitRecord nearestNeighborSearch(KDNode node, Ray ray, float min, float max, HitRecord best) {
     if (node == null) return best;
 
-    // Check the distance to the current object in the node
-    float d = node.obj.getCenter().distanceSquared(point);
-    float bestDistance = best.getCenter().distanceSquared(point);
+    // Check the intersection with the current object in the node
+    HitRecord hit = node.obj.collision(ray, min, max);
 
-    // If the current node is closer, update the best node
-    if (d < bestDistance) {
-      best = node.obj;
-      bestDistance = d;
+    // If the current node is hit and it's closer, update the best hit
+    if (hit != null && (best == null || hit.getT() < best.getT())) {
+      best = hit;
     }
 
     // Determine which child node to visit first
     KDNode first = node.left;
     KDNode second = node.right;
-    if (point.get(node.axis) > node.split) {
+    if (ray.getDirection().get(node.axis) > node.split) {
       first = node.right;
       second = node.left;
     }
 
     // Visit the child node, and possibly the other child node
-    best = nearestNeighborSearch(first, point, best);
-    if (Math.abs(node.split - point.get(node.axis)) < Math.sqrt(bestDistance)) {
-      best = nearestNeighborSearch(second, point, best);
+    best = nearestNeighborSearch(first, ray, min, max, best);
+    if (second != null && (best == null || Math.abs(node.split - ray.getOrigin().get(node.axis)) < best.getT())) {
+      best = nearestNeighborSearch(second, ray, min, max, best);
     }
-
     return best;
   }
-
 }

@@ -5,13 +5,14 @@ import mtdm.dk.Point;
 import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
+import mtdm.dk.objects.Storage.KDTree;
 
 /**
  * The Camera class extends the Thread class and is responsible for 
  * creating a camera viewpoint in the rendered environment.
  */
 public class Camera {
-  private int width, height;
+  private int width, height, adjustedWidth, adjustedHeight;
   private ArrayList<Object> renderObjects;
   private Vector origin = new Vector(0, 0, 0);
   private Vector lowerLeftCorner, horizontal, vertical;
@@ -20,11 +21,15 @@ public class Camera {
   boolean frameSync = false;
   private Vector target; // The point in 3D space that the camera looks at
   private float multiSampling;
+  private static KDTree renderObjectsTree;
 
   public Camera(int w, int h, ArrayList<Object> renderObjects){
     this.width = w;
     this.height = h;
     this.renderObjects = renderObjects;
+
+    this.adjustedWidth = width/2;
+    this.adjustedHeight = height/2;
 
     float aspectRatio = width / height;
 
@@ -39,7 +44,9 @@ public class Camera {
 
   public void render(int threadCount, int maxHit, int multiSampling){
     t = new Calculator[threadCount];
-    Calculator.setRender(renderObjects, maxHit, multiSampling);
+    renderObjectsTree = new KDTree(renderObjects);
+
+    Calculator.setRender(renderObjectsTree, maxHit, multiSampling);
     this.multiSampling = multiSampling;
     for (int i = 0; i < t.length; i++) {
       t[i] = new Calculator(i, width, height);
@@ -133,13 +140,13 @@ public class Camera {
     }
   }
     public void awaitFrame() {
-    awaitFrame(10);
+    awaitFrame(5);
   }
   public void addFrame(boolean orthographic){
     if(orthographic){
-      for (int x = -width/2; x < width/2; x++) {
+      for (int x = -adjustedWidth; x < adjustedWidth; x++) {
         for (int sX = 0; sX < multiSampling; sX++) {
-          for (int y = -height/2; y < height/2; y++) {
+          for (int y = -adjustedHeight; y < adjustedHeight; y++) {
             for (int Sy = 0; Sy < multiSampling; Sy++) {
               Calculator.addWork(new WorkUnit(
                 new Ray(
@@ -150,7 +157,7 @@ public class Camera {
                   ),false),
                   new Vector(0,0,1)
                 ), 
-                new Point(x+width/2,y+height/2), 
+                new Point(x+adjustedWidth,y+adjustedHeight), 
                   sX,Sy
                 )
               );
@@ -160,21 +167,15 @@ public class Camera {
       }
       return;
     }
-    for (int x = -width/2; x < width/2; x++) {
-      for (int y = -height/2; y < height/2; y++) {
-        // float u = (x + width / 2) / (float) width;
-        // float v = -(y + height / 2) / (float) height;
-        // Vector direction = 
-        //   lowerLeftCorner.
-        //   add(horizontal.multi(u), false).
-        //   add(vertical.multi(v), false).
-        //   sub(origin, false);
+
+    for (int x = -adjustedWidth; x < adjustedWidth; x++) {
+      for (int y = -adjustedHeight; y < adjustedHeight; y++) {
         for (int Sx = 0; Sx < multiSampling; Sx++) {
           for (int Sy = 0; Sy < multiSampling; Sy++) {
-            float u = ((float) x + (float) width / 2f + (float) Math.random()) / (float)width; 
-            float v = -((float) y + (float) height / 2f + (float) Math.random()) / (float)height; 
+            float u = ((float) x + (float) adjustedWidth + (float) Math.random()) / (float) width; 
+            float v = -((float) y + (float) adjustedHeight + (float) Math.random()) / (float) height; 
             Ray r = getRay(u, v);
-            Calculator.addWork(new WorkUnit(r, new Point(x+width/2,y+height/2), Sx, Sy));
+            Calculator.addWork(new WorkUnit(r, new Point(x+adjustedWidth,y+adjustedHeight), Sx, Sy));
           }
         }
       }

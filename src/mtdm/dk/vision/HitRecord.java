@@ -65,4 +65,13 @@ public class HitRecord {
   public Color getColor(){
     return color;
   }
+
+  public void reset() {
+    this.point = null;
+    this.normal = null;
+    this.matPtr = null;
+    this.t = 0f;
+    this.color = null;
+    this.frontFace = false;
+  }
 }

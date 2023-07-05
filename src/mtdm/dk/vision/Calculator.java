@@ -1,12 +1,9 @@
 package mtdm.dk.vision;
 
-import java.util.ArrayList;
-import mtdm.dk.objects.Object;
 import mtdm.dk.objects.Material.ScatterResult;
 import mtdm.dk.objects.Storage.KDTree;
 import mtdm.dk.Color;
 import mtdm.dk.Ray;
-import mtdm.dk.objects.Storage.KDTree;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -17,16 +14,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Calculator extends Thread{
   private static BlockingQueue<WorkUnit> workPool = new LinkedBlockingQueue<>();
-  private static ArrayList<Object> renderObjects;
   private static int maxHit;
   private int ID;
   private WorkUnit[] currentWork;
   private HitRecord[] hits;
   private int width, height;
   private static int multiSampling;
-  // private static KDTree<Object> objectKDTree;
+  private static KDTree renderObjectsTree;
 
-  
   public Calculator(int ID, int width, int height){
     this.width = width;
     this.height = height;
@@ -44,47 +39,34 @@ public class Calculator extends Thread{
       }
       for (int i = 0; i < currentWork.length; i++) {
         hits = new HitRecord[maxHit];
-        hits = calculateWhatWasHitAfterwards(currentWork[i].ray, renderObjects, hits, 0, maxHit);
+        hits = calculateWhatWasHitAfterwards(currentWork[i].ray, renderObjectsTree, hits, 0, maxHit);
         currentWork[i].color = Color.fromHits(hits, currentWork[i].ray, multiSampling*2);
         Display.paint(currentWork[i], width, height);
       }
     }
   }
 
-  public static HitRecord[] calculateWhatWasHitAfterwards(Ray ray, ArrayList<Object> renderObjects, HitRecord[] hits, int hitCount, int maxHit) {
+  public static HitRecord[] calculateWhatWasHitAfterwards(Ray ray, KDTree renderObjectsTree, HitRecord[] hits, int hitCount, int maxHit) {
     if (maxHit <= 0) {
       return null;
     }
-    
-    HitRecord closestCollision = null;
-    HitRecord tempCollision = null;
-    for (int r = 0; r < renderObjects.size(); r++) {
-      // Calculate if the current Ray (currentWork[i]) collides with the current object (renderObjects.get(r)).
-      tempCollision = renderObjects.get(r).collision(ray, 0.001f, Float.MAX_VALUE);
+    HitRecord closestCollision;
+    // Query the KDTree to find the closest object that the ray collides with.
+    closestCollision = renderObjectsTree.nearestNeighborSearch(ray, 0.001f, Float.MAX_VALUE);
 
-      // If there was a collision...
-      if (tempCollision != null) {
-        if (closestCollision == null) {
-          closestCollision = tempCollision;
-        }
-        if (ray.getOrigin().getDistance(tempCollision.getPoint()) < ray.getOrigin().getDistance(closestCollision.getPoint())) {
-          closestCollision = tempCollision;
-        }   
-      }
-    }
-    
-    if(closestCollision != null){
+    // If there was a collision...
+    if (closestCollision != null) {
       ScatterResult result = closestCollision.getMatPtr().scatter(ray, closestCollision, closestCollision.getColor());
       if (result != null) {
         hits[hitCount] = closestCollision;
         hits[hitCount].setColor(result.attenuation);
-        calculateWhatWasHitAfterwards(result.scattered, renderObjects, hits, hitCount+1, maxHit-1);
+        calculateWhatWasHitAfterwards(result.scattered, renderObjectsTree, hits, hitCount + 1, maxHit - 1);
       } else {
         return null;
       }
-    } 
+    }
     return hits;
-  }
+}
 
   public static void addWork(WorkUnit work){
     if(work == null) return;
@@ -108,11 +90,11 @@ public class Calculator extends Thread{
     return !workPool.isEmpty();
   } 
   
-  public static void setRender(ArrayList<Object> renderObjects, int maxHit, int multiSampling){
-    Calculator.renderObjects = renderObjects;
+  public static void setRender(KDTree renderObjectsTree, int maxHit, int multiSampling){
+    Calculator.renderObjectsTree = renderObjectsTree;
     Calculator.maxHit = maxHit;
     Calculator.multiSampling = multiSampling;
-  }
+}
 
   public static int getWorkCount() {
     return workPool.size();
