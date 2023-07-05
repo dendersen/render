@@ -53,4 +53,11 @@ public class Square extends Plane{
     // If we reach this point, the intersection point was outside the rectangle.
     return null;
   }
+
+  @Override
+  public Vector getCenter() {
+    Vector corner2 = corner1.sub(corner0, false).add(corner3.sub(corner0, false), false).add(corner0, false);
+    Vector center = corner0.add(corner1, false).add(corner2, false).add(corner3, false);
+    return center.scale(0.25f);
+  }
 }

@@ -17,7 +17,7 @@ public class Display extends PApplet{
   private static Color[][] pixels;
   private int threadCount = 200;
   private int maxHit = 50;
-  private static int multiSampling = 12;
+  private static int multiSampling = 2;
   private boolean orthographic = false;
   private int screenHeigth = 400;
   private int screenWidth = 400;

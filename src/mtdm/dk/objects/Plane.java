@@ -42,4 +42,10 @@ public class Plane extends Object{
     Vector collision = ray.calculate(t);
     return new HitRecord(collision, this.normal, t, color, this.material);
   }
+
+  @Override
+  public Vector getCenter() {
+    Vector normal = new Vector(a, b, c);
+    return normal.scale(-d / normal.lengthSquared());
+}
 }

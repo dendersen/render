@@ -42,4 +42,9 @@ public class Sphere extends Object {
     hit.setFaceNormal(ray, normal);
     return hit;
   }
+
+  @Override
+  public Vector getCenter() {
+    return center;
+  }
 }

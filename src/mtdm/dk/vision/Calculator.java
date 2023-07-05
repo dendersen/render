@@ -3,8 +3,10 @@ package mtdm.dk.vision;
 import java.util.ArrayList;
 import mtdm.dk.objects.Object;
 import mtdm.dk.objects.Material.ScatterResult;
+import mtdm.dk.objects.Storage.KDTree;
 import mtdm.dk.Color;
 import mtdm.dk.Ray;
+import mtdm.dk.objects.Storage.KDTree;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +24,8 @@ public class Calculator extends Thread{
   private HitRecord[] hits;
   private int width, height;
   private static int multiSampling;
+  // private static KDTree<Object> objectKDTree;
+
   
   public Calculator(int ID, int width, int height){
     this.width = width;

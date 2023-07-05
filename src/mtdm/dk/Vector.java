@@ -39,6 +39,16 @@ public class Vector {
     return z;
   }
 
+  public float get(int index) {
+  switch(index) {
+    case 0: return x;
+    case 1: return y;
+    case 2: return z;
+    default: throw new IndexOutOfBoundsException("Index: " + index + ", Size: 3");
+  }
+}
+
+
   // Get a copy of the vector
   private Vector copy() {
     return new Vector(this.x, this.y, this.z);
@@ -171,9 +181,21 @@ public class Vector {
     return this;
   }
 
+  public Vector scale(float scalar) {
+    return new Vector(x * scalar, y * scalar, z * scalar);
+  }
+
   // Compute the square of the length
   public float lengthSquared(){
     return this.x * this.x + this.y * this.y + this.z * this.z;
+  }
+
+  // Get the squared distance to another point
+  public float distanceSquared(Vector point) {
+    float dx = this.x - point.getX();
+    float dy = this.y - point.getY();
+    float dz = this.z - point.getZ();
+    return dx*dx + dy*dy + dz*dz;
   }
 
   // Compute the length

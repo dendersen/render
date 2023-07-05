@@ -49,4 +49,10 @@ public class Triangle extends Plane{
     }
     return null;
   }
+
+  @Override
+  public Vector getCenter() {
+    Vector center = corner0.add(corner1, false).add(corner2, false);
+    return center.scale(1/3f);
+  }
 }
