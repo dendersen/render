@@ -1,28 +1,19 @@
 package mtdm.dk;
 
-import java.util.function.Function;
-
 import mtdm.dk.objects.Material.ScatterResult;
 import mtdm.dk.vision.HitRecord;
-import mtdm.dk.vision.WorkUnit;
 
 public class Ray {
   private Vector origin;
   private Vector direction;
-  private Function <Float,Vector> calc = t-> origin.add(direction.multi(t), false);
 
   public Ray(Vector origin, Vector direction){
     this.origin = origin;
     this.direction = direction;
-    calc = t-> origin.add(direction.multi(t), false);
   }
 
-  public Vector calculate(float t){
-    return calc.apply(t);
-  }
-
-    public Vector calculate(float t, Color color){
-    Vector temp = calc.apply(t);
+    public Vector calculate(float t){
+    Vector temp = origin.add(direction.multi(t), false);
     return temp;
   }
 
@@ -58,8 +49,8 @@ public class Ray {
     return origin.getZ();
   }
 
-  public ScatterResult bounce(HitRecord rec, WorkUnit workUnit){
-    ScatterResult result = rec.getMatPtr().scatter(workUnit.ray, rec, workUnit.color);
+  public ScatterResult bounce(HitRecord rec, Ray ray, Color color){
+    ScatterResult result = rec.getMatPtr().scatter(ray, rec, color);
     return result;
 
     // this.origin = rec.getPoint();

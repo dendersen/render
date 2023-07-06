@@ -14,7 +14,7 @@ public class HitRecord {
   private float t;
   private boolean frontFace;
   private Color color;
-
+  
   // Constructor
   public HitRecord(Vector p, Vector normal, float t, Color color, Material material) {
     this.point = p;
@@ -27,6 +27,10 @@ public class HitRecord {
   // Getters
   public Material getMatPtr() {
     return this.matPtr;
+  }
+
+  public boolean getFrontFace() {
+    return this.frontFace;
   }
 
   public Vector getPoint() {

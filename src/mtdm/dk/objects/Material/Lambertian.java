@@ -19,12 +19,12 @@ public class Lambertian implements Material {
       scatterDirection = rec.getNormal();
     }
     Ray scattered = new Ray(rec.getPoint(), scatterDirection);
-    attenuation = albedo;
+    attenuation = this.albedo;
     return new ScatterResult(scattered, attenuation);
   }
 
   @Override
   public Color getColor() {
-    return albedo;
+    return this.albedo;
   }
 }

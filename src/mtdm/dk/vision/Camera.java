@@ -1,11 +1,11 @@
 package mtdm.dk.vision;
 
 import java.util.ArrayList;
-import mtdm.dk.Point;
-import mtdm.dk.Ray;
 import mtdm.dk.Vector;
 import mtdm.dk.objects.Object;
 import mtdm.dk.objects.Storage.KDTree;
+import mtdm.dk.work.OrthographicWork;
+import mtdm.dk.work.PerspectiveWork;
 
 /**
  * The Camera class extends the Thread class and is responsible for 
@@ -91,13 +91,7 @@ public class Camera {
     }
   }
 
-  public Ray getRay(float u, float v) {
-    Vector direction = lowerLeftCorner.
-    add(horizontal.multi(u), false).
-    add(vertical.multi(v), false).
-    sub(origin, false);
-    return new Ray(origin, direction);
-  }
+
 
   private Vector rotateX(Vector v, float angle) {
     float y = (float) (v.getY() * Math.cos(angle) - v.getZ() * Math.sin(angle));
@@ -131,7 +125,7 @@ public class Camera {
 
   public void awaitFrame(int millis) {
     while(Calculator.hasWork()){
-      System.out.print(Calculator.getWorkCount() + "         \r");
+      System.out.print(Calculator.getWorkCount() + "w         \r");
       try {
         Thread.sleep(millis);
       } catch (Exception e) {
@@ -142,40 +136,83 @@ public class Camera {
     public void awaitFrame() {
     awaitFrame(5);
   }
-  public void addFrame(boolean orthographic){
+  public void addFrame(boolean orthographic, boolean frameSync){
+    System.out.print("adding work");
+    long startTime = System.currentTimeMillis();
     if(orthographic){
-      for (int x = -adjustedWidth; x < adjustedWidth; x++) {
-        for (int sX = 0; sX < multiSampling; sX++) {
+      float adjustedSampling = multiSampling/2;
+      Orthographic[] t = new Orthographic[10];
+      for (int i = 0; i < t.length; i++) {
+        t[i] = new Orthographic();
+        t[i].start(i, adjustedSampling,-adjustedWidth + (width/t.length)*i, -adjustedWidth + (width/t.length)*(i+1));
+      }
+      if(frameSync){
+        for (int i = 0; i < t.length; i++) {
+          try {
+            t[i].join();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }else{
+      int adjustedSampling = (int)multiSampling/2;
+      Perspective[] t = new Perspective[10];
+      for (int i = 0; i < t.length; i++) {
+        t[i] = new Perspective();
+        t[i].start(i, adjustedSampling,-adjustedWidth + (width/t.length)*i, -adjustedWidth + (width/t.length)*(i+1));
+      }
+      if(frameSync){
+        for (int i = 0; i < t.length; i++) {
+          try {
+            t[i].join();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+    System.out.println(" took " + ((System.currentTimeMillis()-startTime)/1000)+"sec");
+  }
+  public class Perspective extends Thread {
+    int adjustedSampling;
+    int start, end;
+    public void start(int ID, int adjustedSampling, int start, int end){
+      setName("workGenerator" + ID);
+      this.adjustedSampling = adjustedSampling;
+      this.start = start;
+      this.end = end;
+      super.start();
+    }
+    public void run(){
+      for (int x = start; x < end; x++) {
+        for (int Sx = -adjustedSampling; Sx < adjustedSampling; Sx++) {
           for (int y = -adjustedHeight; y < adjustedHeight; y++) {
-            for (int Sy = 0; Sy < multiSampling; Sy++) {
-              Calculator.addWork(new WorkUnit(
-                new Ray(
-                  origin.add(new Vector(
-                    x+(sX-multiSampling/2)/multiSampling,
-                    y+(Sy-multiSampling/2)/multiSampling,
-                    0
-                  ),false),
-                  new Vector(0,0,1)
-                ), 
-                new Point(x+adjustedWidth,y+adjustedHeight), 
-                  sX,Sy
-                )
-              );
+            for (int Sy = -adjustedSampling; Sy < adjustedSampling; Sy++) {
+              Calculator.addWork(new PerspectiveWork(x,y,Sx,Sy,adjustedWidth,adjustedHeight,lowerLeftCorner,horizontal,vertical,origin,(int)multiSampling));
             }
           }
         }
       }
-      return;
     }
-
-    for (int x = -adjustedWidth; x < adjustedWidth; x++) {
-      for (int y = -adjustedHeight; y < adjustedHeight; y++) {
-        for (int Sx = 0; Sx < multiSampling; Sx++) {
-          for (int Sy = 0; Sy < multiSampling; Sy++) {
-            float u = ((float) x + (float) adjustedWidth + (float) Math.random()) / (float) width; 
-            float v = -((float) y + (float) adjustedHeight + (float) Math.random()) / (float) height; 
-            Ray r = getRay(u, v);
-            Calculator.addWork(new WorkUnit(r, new Point(x+adjustedWidth,y+adjustedHeight), Sx, Sy));
+  }
+  public class Orthographic extends Thread {
+    float adjustedSampling;
+    int start, end;
+    public void start(int ID, float adjustedSampling, int start, int end){
+      setName("workGenerator" + ID);
+      this.adjustedSampling = adjustedSampling;
+      this.start = start;
+      this.end = end;
+      super.start();
+    }
+    public void run(){
+      for (int x = start; x < end; x++) {
+        for (float Sx = -adjustedSampling; Sx < adjustedSampling; Sx++) {
+          for (int y = -adjustedHeight; y < adjustedHeight; y++) {
+            for (float Sy = -adjustedSampling; Sy < adjustedSampling; Sy++) {
+              Calculator.addWork(new OrthographicWork(x, (int)Sx, y, (int)Sy, (int)multiSampling, origin, getDirection(), adjustedHeight, adjustedWidth));
+            }
           }
         }
       }

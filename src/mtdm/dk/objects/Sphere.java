@@ -23,7 +23,7 @@ public class Sphere extends Object {
     float lengthSquared = ray.getDirection().lengthSquared();
     float halfB = Vector.dot(rayToCenter, ray.getDirection());
     
-    float discriminant = (float)Math.pow(halfB,2) - lengthSquared*(rayToCenter.lengthSquared() - radius*radius);
+    float discriminant = (float)Math.pow(halfB,2) - lengthSquared*(rayToCenter.lengthSquared() - (float)Math.pow(radius,2));
 
     // Find the nearest root that lies in the acceptable range.
     float root = (float) ((-halfB - Math.sqrt(discriminant))/(lengthSquared));
@@ -37,8 +37,8 @@ public class Sphere extends Object {
       return null;
     }
 
-    Vector normal = ray.calculate(root).sub(center, false).normalize(false);
-    HitRecord hit = new HitRecord(ray.calculate(root, color), normal, root, color, material);
+    Vector normal = ray.calculate(root).sub(center, true).div(radius).normalize(true);
+    HitRecord hit = new HitRecord(ray.calculate(root), normal, root, color, material);
     hit.setFaceNormal(ray, normal);
     return hit;
   }

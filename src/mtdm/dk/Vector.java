@@ -1,5 +1,7 @@
 package mtdm.dk;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * 3D Vector class with basic vector operations.
  */
@@ -16,9 +18,9 @@ public class Vector {
   // Random vector within a range
   public Vector(int min, int max){
     while (true) {
-      this.x = min + (max-min) * (float)Math.random();
-      this.y = min + (max-min) * (float)Math.random();
-      this.z = min + (max-min) * (float)Math.random();
+      this.x = min + (max-min) * ThreadLocalRandom.current().nextFloat();
+      this.y = min + (max-min) * ThreadLocalRandom.current().nextFloat();
+      this.z = min + (max-min) * ThreadLocalRandom.current().nextFloat();
       if (this.lengthSquared() < 1) {
         this.normalize();
         break;
@@ -50,7 +52,7 @@ public class Vector {
 
 
   // Get a copy of the vector
-  private Vector copy() {
+  public Vector copy() {
     return new Vector(this.x, this.y, this.z);
   }
 
@@ -181,6 +183,14 @@ public class Vector {
     return this;
   }
 
+  // Compute the refraction of a vector
+  public static Vector refract(Vector uv, Vector normal, float etaiOverEtat) {
+    float cosTheta = Math.min(uv.getNegative().dot(normal), 1.0f);
+    Vector rOutPerp = uv.add(normal.multi(cosTheta)).multi(etaiOverEtat);
+    Vector rOutPerallel = normal.multi((float)-Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
+    return rOutPerp.add(rOutPerallel,false);
+  }
+
   public Vector scale(float scalar) {
     return new Vector(x * scalar, y * scalar, z * scalar);
   }
@@ -223,9 +233,9 @@ public class Vector {
 
   public static Vector randomInUnitSphere(){
     while (true) {
-      float x = -1 + 2*(float)Math.random();
-      float y = -1 + 2*(float)Math.random();
-      float z = -1 + 2*(float)Math.random();
+      float x = -1 + 2*ThreadLocalRandom.current().nextFloat();
+      float y = -1 + 2*ThreadLocalRandom.current().nextFloat();
+      float z = -1 + 2*ThreadLocalRandom.current().nextFloat();
       
       Vector random = new Vector(x, y, z);
       if (random.lengthSquared() < 1) {
