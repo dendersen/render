@@ -22,10 +22,15 @@ public class Camera {
   private Vector target; // The point in 3D space that the camera looks at
   private float multiSampling;
   private static KDTree renderObjectsTree;
+  private float vfov; // vertical field-of-view in degrees
+  private float aspectRatio;
 
   public Camera(int w, int h, ArrayList<Object> renderObjects){
+
+    float theta = (float) Math.toRadians(vfov);
+    
     this.width = w;
-    this.height = h;
+    this.height = (float) Math.tan(theta/2f);
     this.renderObjects = renderObjects;
 
     this.adjustedWidth = width/2;
@@ -46,7 +51,7 @@ public class Camera {
     t = new Calculator[threadCount];
     renderObjectsTree = new KDTree(renderObjects);
 
-    Calculator.setRender(renderObjectsTree, maxHit, multiSampling);
+    Calculator.setRender(renderObjectsTree, maxHit);
     this.multiSampling = multiSampling;
     for (int i = 0; i < t.length; i++) {
       t[i] = new Calculator(i, width, height);
@@ -186,12 +191,8 @@ public class Camera {
     }
     public void run(){
       for (int x = start; x < end; x++) {
-        for (int Sx = -adjustedSampling; Sx < adjustedSampling; Sx++) {
-          for (int y = -adjustedHeight; y < adjustedHeight; y++) {
-            for (int Sy = -adjustedSampling; Sy < adjustedSampling; Sy++) {
-              Calculator.addWork(new PerspectiveWork(x,y,Sx,Sy,adjustedWidth,adjustedHeight,lowerLeftCorner,horizontal,vertical,origin,(int)multiSampling));
-            }
-          }
+        for (int y = -adjustedHeight; y < adjustedHeight; y++) {
+          Calculator.addWork(new PerspectiveWork(x,y,adjustedWidth,adjustedHeight,lowerLeftCorner,horizontal,vertical,origin,(int)multiSampling));
         }
       }
     }
@@ -208,12 +209,8 @@ public class Camera {
     }
     public void run(){
       for (int x = start; x < end; x++) {
-        for (float Sx = -adjustedSampling; Sx < adjustedSampling; Sx++) {
-          for (int y = -adjustedHeight; y < adjustedHeight; y++) {
-            for (float Sy = -adjustedSampling; Sy < adjustedSampling; Sy++) {
-              Calculator.addWork(new OrthographicWork(x, (int)Sx, y, (int)Sy, (int)multiSampling, origin, getDirection(), adjustedHeight, adjustedWidth));
-            }
-          }
+        for (int y = -adjustedHeight; y < adjustedHeight; y++) {
+          Calculator.addWork(new OrthographicWork(x, y, (int)multiSampling, origin, getDirection(), adjustedHeight, adjustedWidth));
         }
       }
     }

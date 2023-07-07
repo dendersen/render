@@ -38,7 +38,6 @@ public class Calculator extends Thread{
   }
 
   public static void addWork(Work work){
-    // if(work == null) return;
     workPool.add(work);
   }
   
@@ -59,7 +58,7 @@ public class Calculator extends Thread{
     return !workPool.isEmpty();
   } 
   
-  public static void setRender(KDTree renderObjectsTree, int maxHit, int multiSampling){
+  public static void setRender(KDTree renderObjectsTree, int maxHit){
     Calculator.renderObjectsTree = renderObjectsTree;
     Calculator.maxHit = maxHit;
 }

@@ -6,7 +6,7 @@ import mtdm.dk.Vector;
 import mtdm.dk.vision.HitRecord;
 
 public class Lambertian implements Material {
-  public Color albedo;
+  public Color albedo = new Color(0.1f, 0.2f, 0.5f);
 
   public Lambertian(Color a) {
     this.albedo = a;
@@ -19,8 +19,7 @@ public class Lambertian implements Material {
       scatterDirection = rec.getNormal();
     }
     Ray scattered = new Ray(rec.getPoint(), scatterDirection);
-    attenuation = this.albedo;
-    return new ScatterResult(scattered, attenuation);
+    return new ScatterResult(scattered, this.albedo);
   }
 
   @Override

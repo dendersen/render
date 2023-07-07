@@ -19,7 +19,7 @@ public class Display extends PApplet{
   private static Color[][] pixels;
   private int threadCount = 20;
   private int maxHit = 50;
-  private static int multiSampling = 10;
+  private static int multiSampling = 100;
   private boolean orthographic = false;
   private int screenHeight = 1000;
   private int screenWidth = 1000;
@@ -39,38 +39,33 @@ public class Display extends PApplet{
     long awaitingPixels = height*width;
     // System.out.println();
     for (int y = 0; y < height; y++) {
-      if(y < 0 || y >= height){
-        continue;
-      }
+      // if(y < 0 || y >= height){
+      //   continue;
+      // }
       for (int x = 0; x < width; x++) {
-        if(x < 0 || x >= width){
-          continue;
-        }
-        Color[] colors = new Color[(int)Math.pow(multiSampling,2)];
-        for (int i = 0; i < multiSampling; i++) {
-          for (int j = 0; j < multiSampling; j++) {
-            colors[i*multiSampling+j] = pixels[x*multiSampling+i][y*multiSampling+j];
-          }
-        }
-        Color out = Color.average(colors);
+        // if(x < 0 || x >= width){
+        //   continue;
+        // }
+
+        Color out = pixels[x][y];
         if(out != null){
           g.stroke(out.r,out.g,out.b);
         }
         g.point(x, y);
-        System.out.print((awaitingPixels-x-y*width)+ "p   \r");
+        // System.out.print((awaitingPixels-x-y*width)+ "p   \r");
       }
     }
     System.out.println((double)(System.currentTimeMillis()-startTime)/1d/1000d + " sec/frame");
-    camera.move(0,0,-10);
+    // camera.move(0,0,-10);
   }
   
   @Override
   public void setup() {
     // Scale color values by 255 for each material
-    Material material_ground = new Lambertian(new Color(188, 188, 0));
-    Material material_center = new Lambertian(new Color(26, 52, 125));
+    Material material_ground = new Lambertian(new Color(0.8f, 0.8f, 0));
+    Material material_center = new Lambertian(new Color(0.1f, 0.2f, 0.5f));
     Material material_left   = new Dielectric(1.5f);
-    Material material_right  = new Metal(new Color(188, 125, 52), 0);
+    Material material_right  = new Metal(new Color(0.8f, 0.6f, 0.2f), 0);
 
     // Add the spheres to your object list
     renderObjects.add(new Sphere(new Vector( 0, 100.5f, 1), 100.0f, material_ground));
@@ -83,7 +78,7 @@ public class Display extends PApplet{
     background(0);
     strokeWeight(2);
     camera = new Camera(width, height, renderObjects);
-    pixels = new Color[width*multiSampling][height*multiSampling];
+    pixels = new Color[width][height];
     camera.render(threadCount,maxHit,multiSampling);
   }
   
@@ -95,17 +90,13 @@ public class Display extends PApplet{
     return new Vector(0, 0, 0); //temporary
   }
 
-  public static void paint(Point Pixel, int width, int height, int sampleX, int sampleY, Color color){
+  public static void paint(Point Pixel, int width, int height, Color color){
     if(Pixel.getX() < 0  || Pixel.getX() > width){
       return;
     }
     if(Pixel.getY() < 0  || Pixel.getY() > height){
       return;
     }
-    pixels[
-      Pixel.getX()*multiSampling + sampleX
-    ][
-      Pixel.getY()*multiSampling + sampleY
-    ] = color;
+    pixels[Pixel.getX()][Pixel.getY()] = color;
   }
 }
