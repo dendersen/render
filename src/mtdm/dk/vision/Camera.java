@@ -19,34 +19,38 @@ public class Camera {
   private float Rx = 0,Ry = 0,Rz = 0; //rotation angles
   private Calculator[] t;
   boolean frameSync = false;
-  private Vector target; // The point in 3D space that the camera looks at
+  private Vector lookAt; // The point in 3D space that the camera looks at
   private float multiSampling;
   private static KDTree renderObjectsTree;
-  private float vfov; // vertical field-of-view in degrees
   private float aspectRatio;
 
-  public Camera(int w, int h, ArrayList<Object> renderObjects){
-
-    float theta = (float) Math.toRadians(vfov);
-    
+  public Camera(int w, int h, ArrayList<Object> renderObjects, Vector lookFrom, Vector lookAt, Vector vup, float vfov){
     this.width = w;
-    this.height = (float) Math.tan(theta/2f);
-    this.renderObjects = renderObjects;
+    this.height = h;
+    this.lookAt = lookAt;
+    this.aspectRatio = (float) width / height; // Set aspect ratio before using it
+    float theta = (float) Math.toRadians(vfov);
+    float hNew = (float) Math.tan(theta / 2);
+    float viewportHeight = 2.0f * hNew;
+    float viewportWidth = aspectRatio * viewportHeight;
 
+    Vector wVector = lookAt.sub(lookFrom, false).normalize(false); // direction from lookFrom to lookAt
+    Vector u = vup.cross(wVector).normalize(false); // right direction
+    Vector v = u.cross(wVector); // up direction
+
+    this.origin = lookFrom;
+    this.horizontal = u.multi(-viewportWidth);
+    this.vertical = v.multi(-viewportHeight); // flip Y-axis
+    this.lowerLeftCorner = origin.sub(horizontal.div(2), false)
+                                .add(vertical.div(2), false) // flip Y-axis
+                                .add(wVector, false); // flip Z-axis
+
+    this.renderObjects = renderObjects;
+    
     this.adjustedWidth = width/2;
     this.adjustedHeight = height/2;
-
-    float aspectRatio = width / height;
-
-    float viewportHeight = 2.0f;
-    float viewportWidth = aspectRatio * viewportHeight;
-    float focalLength = 1.0f;
-
-    this.horizontal = new Vector(viewportWidth, 0, 0);
-    this.vertical = new Vector(0, -viewportHeight, 0); // Y is flipped
-    this.lowerLeftCorner = origin.sub(horizontal.div(2), false).add(vertical.div(2), false).add(new Vector(0, 0, focalLength), false); // Z is flipped
   }
-
+  
   public void render(int threadCount, int maxHit, int multiSampling){
     t = new Calculator[threadCount];
     renderObjectsTree = new KDTree(renderObjects);
@@ -61,8 +65,8 @@ public class Camera {
     }
   }
 
-  public void lookAt(Vector target) {
-    this.target = target;
+  public void lookAt(Vector lookAt) {
+    this.lookAt = lookAt;
   }
 
   // Method to update rotation around the X-axis
@@ -83,8 +87,8 @@ public class Camera {
   public Vector getDirection(){
     // If a target point has been set, ignore the Rx, Ry, Rz rotation angles and instead
     // calculate the direction vector from the camera location to the target point.
-    if (target != null) {
-      Vector direction = target.sub(origin, false);
+    if (lookAt != null) {
+      Vector direction = lookAt.sub(origin, false);
       return direction.normalize(true); // Normalize the direction vector to ensure it has unit length
     } else {
       // If no target point has been set, calculate the direction vector based on the rotation angles.

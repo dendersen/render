@@ -1,7 +1,5 @@
 package mtdm.dk.work;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import mtdm.dk.Color;
 import mtdm.dk.Point;
 import mtdm.dk.Ray;

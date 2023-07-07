@@ -1,5 +1,6 @@
 package mtdm.dk;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -241,6 +242,16 @@ public class Vector {
       if (random.lengthSquared() < 1) {
         return random;
       }
+    }
+  }
+
+  public static Vector randomInUnitDisk() {
+    while (true) {
+      float x = ThreadLocalRandom.current().nextFloat() * 2 - 1; // random float between -1 and 1
+      float y = ThreadLocalRandom.current().nextFloat() * 2 - 1; // random float between -1 and 1
+      Vector p = new Vector(x, y, 0);
+      if (p.lengthSquared() >= 1) continue;
+      return p;
     }
   }
 

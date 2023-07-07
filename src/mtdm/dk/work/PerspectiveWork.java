@@ -54,11 +54,11 @@ public class PerspectiveWork extends Work{
     Display.paint(pixel, adjustedWidth*2, adjustedHeight*2, colorToDraw);
   }
 
-  private Ray getRay(float u, float v) {
-    Vector direction = lowerLeftCorner.
-    add(horizontal.multi(u), false).
-    add(vertical.multi(v), false).
-    sub(origin, false);
+  private Ray getRay(float s, float t) {
+    Vector direction = lowerLeftCorner
+                        .add(horizontal.multi(s), false)
+                        .add(vertical.multi(t), false) // flip Y-axis
+                        .sub(origin, false);
     return new Ray(origin, direction);
   }
 }
