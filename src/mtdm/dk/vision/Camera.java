@@ -23,11 +23,18 @@ public class Camera {
   private float multiSampling;
   private static KDTree renderObjectsTree;
   private float aspectRatio;
+  private float aperture;
+  private float focusDist;
+  private float lensRadius;
+  private Vector u;
+  private Vector v;
 
-  public Camera(int w, int h, ArrayList<Object> renderObjects, Vector lookFrom, Vector lookAt, Vector vup, float vfov){
+  public Camera(int w, int h, ArrayList<Object> renderObjects, Vector lookFrom, Vector lookAt, Vector vup, float vfov, float aperture, float focusDist){
     this.width = w;
     this.height = h;
     this.lookAt = lookAt;
+    this.focusDist = focusDist;
+    this.aperture = aperture;
     this.aspectRatio = (float) width / height; // Set aspect ratio before using it
     float theta = (float) Math.toRadians(vfov);
     float hNew = (float) Math.tan(theta / 2);
@@ -35,15 +42,17 @@ public class Camera {
     float viewportWidth = aspectRatio * viewportHeight;
 
     Vector wVector = lookAt.sub(lookFrom, false).normalize(false); // direction from lookFrom to lookAt
-    Vector u = vup.cross(wVector).normalize(false); // right direction
-    Vector v = u.cross(wVector); // up direction
+    this.u = vup.cross(wVector).normalize(false); // right direction
+    this.v = u.cross(wVector); // up direction
 
     this.origin = lookFrom;
-    this.horizontal = u.multi(-viewportWidth);
-    this.vertical = v.multi(-viewportHeight); // flip Y-axis
+    this.horizontal = u.multi(-viewportWidth).multi(focusDist);
+    this.vertical = v.multi(-viewportHeight).multi(focusDist); // flip Y-axis
     this.lowerLeftCorner = origin.sub(horizontal.div(2), false)
                                 .add(vertical.div(2), false) // flip Y-axis
-                                .add(wVector, false); // flip Z-axis
+                                .add(wVector.multi(focusDist), false); // flip Z-axis
+    
+    this.lensRadius = aperture/2f;
 
     this.renderObjects = renderObjects;
     
@@ -196,7 +205,7 @@ public class Camera {
     public void run(){
       for (int x = start; x < end; x++) {
         for (int y = -adjustedHeight; y < adjustedHeight; y++) {
-          Calculator.addWork(new PerspectiveWork(x,y,adjustedWidth,adjustedHeight,lowerLeftCorner,horizontal,vertical,origin,(int)multiSampling));
+          Calculator.addWork(new PerspectiveWork(x,y,adjustedWidth,adjustedHeight,lowerLeftCorner,horizontal,vertical,origin, lensRadius, u, v,(int)multiSampling));
         }
       }
     }

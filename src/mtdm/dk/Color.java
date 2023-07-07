@@ -1,5 +1,7 @@
 package mtdm.dk;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Color {
   public float r,g,b;
   public static Color Black = new Color(0,0,0);
@@ -16,48 +18,19 @@ public class Color {
     this.b = b;
   }
 
-  // public static Color FromNormal(Vector normal){
-  //   float r = 0.5f*normal.getX()+0.5f;
-  //   float g = 0.5f*normal.getY()+0.5f;
-  //   float b = 0.5f*normal.getZ()+0.5f; 
-  //   return new Color(r,g,b);
-  // }
+  public static Color randomColor(float min, float max) {
+    float r, g, b;
+    while (true) {
+      r = ThreadLocalRandom.current().nextFloat();
+      g = ThreadLocalRandom.current().nextFloat();
+      b = ThreadLocalRandom.current().nextFloat();
+      if (r >= min && r <= max && g >= min && g <= max && b >= min && b <= max) {
+        break;
+      }
+    } 
+    return new Color(r, g, b);
+  }
 
-  // public static Color average(Color[] average){
-  //   float r = 0;
-  //   float g = 0;
-  //   float b = 0;
-  //   for (int i = 0; i < average.length; i++) {
-  //     if(average[i] == null) continue;
-  //     r += average[i].r;
-  //     g += average[i].g;
-  //     b += average[i].b;
-  //   }
-  //   if(r == 0 && g == 0 && b == 0){
-  //     return Black;
-  //   }
-  //   r /= average.length;
-  //   g /= average.length;
-  //   b /= average.length;
-  //   return new Color(r,g,b);
-  // }
-  
-  // public static Color fromHits(HitRecord[] hits, Ray ray, int samplesPerPixel) {
-  //   if(hits == null || hits[0] == null){
-  //     return skyBox(ray);
-  //   }
-
-	// 	Color color = hits[0].getColor();    
-  //   for (int i = 1; i < hits.length && hits[i-1] != null; i++) {
-  //     if(hits[i] == null){
-  //       color = multiplyTwoColors(color,skyBox(ray));
-  //     }else{
-  //       color = multiplyTwoColors(color,hits[i].getColor());
-  //     }
-  //   }
-  //   // return color;
-  //   return writeColor(color, samplesPerPixel);
-	// }
 
   public static Color skyBox(Ray ray){
     Vector unitDirection = ray.getDirection().normalize(false);

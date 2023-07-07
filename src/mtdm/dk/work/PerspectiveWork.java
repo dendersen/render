@@ -21,7 +21,10 @@ public class PerspectiveWork extends Work{
   Vector horizontal;
   Vector vertical;
   Vector origin;
-  public PerspectiveWork(int x,int y,int adjustedWidth,int adjustedHeight,Vector lowerLeftCorner,Vector horizontal,Vector vertical,Vector origin, int multiSampling){
+  Vector u;
+  Vector v;
+  float lensRadius;
+  public PerspectiveWork(int x,int y,int adjustedWidth,int adjustedHeight,Vector lowerLeftCorner,Vector horizontal,Vector vertical,Vector origin, float lensRadius, Vector u, Vector v, int multiSampling){
   this.x = x;
   this.y = y;
   this.adjustedWidth = adjustedWidth;
@@ -31,6 +34,9 @@ public class PerspectiveWork extends Work{
   this.vertical = vertical;
   this.origin = origin;
   this.multiSampling = multiSampling;
+  this.lensRadius = lensRadius;
+  this.u = u;
+  this.v = v;
   }
 
   @Override
@@ -38,9 +44,9 @@ public class PerspectiveWork extends Work{
     Point pixel = new Point(x+adjustedWidth, y+adjustedHeight);
     Color[] listOfColors = new Color[multiSampling];
     for (int i = 0; i < multiSampling; i++) {
-      float u = ((float) x + (float) adjustedWidth + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedWidth*2); 
-      float v = -((float) y + (float) adjustedHeight + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedHeight*2); 
-      Ray ray = getRay(u, v);
+      float s = ((float) x + (float) adjustedWidth + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedWidth*2); 
+      float t = -((float) y + (float) adjustedHeight + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedHeight*2); 
+      Ray ray = getRay(s, t, lensRadius, u, v);
       listOfColors[i] = work(ray, maxHit, renderObjectsTree);
     }
 
@@ -54,11 +60,15 @@ public class PerspectiveWork extends Work{
     Display.paint(pixel, adjustedWidth*2, adjustedHeight*2, colorToDraw);
   }
 
-  private Ray getRay(float s, float t) {
-    Vector direction = lowerLeftCorner
+  private Ray getRay(float s, float t, float lensRadius, Vector u, Vector v) {
+    Vector rd = Vector.randomInUnitDisk().multi(lensRadius);
+    Vector offset = u.multi(rd.getX()).add(v.multi(rd.getY()), false);
+
+    Vector target = lowerLeftCorner
                         .add(horizontal.multi(s), false)
-                        .add(vertical.multi(t), false) // flip Y-axis
-                        .sub(origin, false);
-    return new Ray(origin, direction);
+                        .add(vertical.multi(t), false)
+                        .sub(origin, false)
+                        .sub(offset, false);
+    return new Ray(origin.add(offset, false), target);
   }
 }

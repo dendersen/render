@@ -1,6 +1,7 @@
 package mtdm.dk.vision;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mtdm.dk.Color;
 import mtdm.dk.Point;
@@ -19,7 +20,7 @@ public class Display extends PApplet{
   private static Color[][] pixels;
   private int threadCount = 20;
   private int maxHit = 50;
-  private static int multiSampling = 20;
+  private static int multiSampling = 100;
   private boolean orthographic = false;
   private int screenHeight = 1000;
   private int screenWidth = 1000;
@@ -52,16 +53,15 @@ public class Display extends PApplet{
           g.stroke(out.r,out.g,out.b);
         }
         g.point(x, y);
-        // System.out.print((awaitingPixels-x-y*width)+ "p   \r");
+        System.out.print((awaitingPixels-x-y*width)+ "p   \r");
       }
     }
-    System.out.println((double)(System.currentTimeMillis()-startTime)/1d/1000d + " sec/frame");
+    // System.out.println((double)(System.currentTimeMillis()-startTime)/1d/1000d + " sec/frame");
     // camera.move(0,0,-10);
   }
   
   @Override
   public void setup() {
-    // Scale color values by 255 for each material
     Material material_ground = new Lambertian(new Color(0.8f, 0.8f, 0));
     Material material_center = new Lambertian(new Color(0.1f, 0.2f, 0.5f));
     Material material_left   = new Dielectric(1.5f);
@@ -81,10 +81,19 @@ public class Display extends PApplet{
     // renderObjects.add(new Sphere(new Vector( -R,   0, 1),   R, material_left));
     // renderObjects.add(new Sphere(new Vector( R,   0, 1),   R, material_right));
 
+    // renderObjects = randomScene();
+
     startTime = System.currentTimeMillis();
     background(0);
     strokeWeight(2);
-    camera = new Camera(width, height, renderObjects, new Vector(1,-2,-1), new Vector(0,0,1), new Vector(0,-1,0), 90);
+
+    Vector lookfrom = new Vector(0,-10,-6);
+    Vector lookat = new Vector(0,0,0);
+    Vector vup = new Vector(0,-1,0);
+    float distToFocus = 10;
+    float aperture = 0.01f;
+
+    camera = new Camera(width, height, renderObjects, lookfrom, lookat, vup, 20, aperture, distToFocus);
     pixels = new Color[width][height];
     camera.render(threadCount,maxHit,multiSampling);
   }
@@ -105,5 +114,51 @@ public class Display extends PApplet{
       return;
     }
     pixels[Pixel.getX()][Pixel.getY()] = color;
+  }
+
+  public ArrayList<Object> randomScene() {
+    ArrayList<Object> world = new ArrayList<>();
+
+    Material groundMaterial = new Lambertian(new Color(0.5f, 0.5f, 0.5f));
+    world.add(new Sphere(new Vector(0, -1000, 0), 1000, groundMaterial));
+
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            float chooseMat = ThreadLocalRandom.current().nextFloat();
+            Vector center = new Vector(a + 0.9f * ThreadLocalRandom.current().nextFloat(), -0.2f, b + 0.9f * ThreadLocalRandom.current().nextFloat());
+
+            if (center.sub(new Vector(4, -0.2f, 0), true).length() > 0.9) {
+                Material sphereMaterial;
+
+                if (chooseMat < 0.8f) {
+                    // diffuse
+                    Color albedo = new Color(ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current().nextFloat())
+                    .multi(new Color(ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current().nextFloat(), ThreadLocalRandom.current().nextFloat()));
+                    sphereMaterial = new Lambertian(albedo);
+                    world.add(new Sphere(center, 0.2f, sphereMaterial));
+                } else if (chooseMat < 0.95f) {
+                    // metal
+                    Color albedo = Color.randomColor(0.5f, 1f);
+                    float fuzz = ThreadLocalRandom.current().nextFloat() * 0.5f;
+                    sphereMaterial = new Metal(albedo, fuzz);
+                    world.add(new Sphere(center, 0.2f, sphereMaterial));
+                } else {
+                    // glass
+                    sphereMaterial = new Dielectric(1.5f);
+                    world.add(new Sphere(center, 0.2f, sphereMaterial));
+                }
+            }
+        }
+    }
+
+    Material material1 = new Dielectric(1.5f);
+    world.add(new Sphere(new Vector(0, -1, 0), 1.0f, material1));
+
+    Material material2 = new Lambertian(new Color(0.4f, 0.2f, 0.1f));
+    world.add(new Sphere(new Vector(-4, -1, 0), 1.0f, material2));
+
+    Material material3 = new Metal(new Color(0.7f, 0.6f, 0.5f), 0.0f);
+    world.add(new Sphere(new Vector(4, -1, 0), 1.0f, material3));
+    return world;
   }
 }
