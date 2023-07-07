@@ -34,7 +34,7 @@ public class Color {
 
   public static Color skyBox(Ray ray){
     Vector unitDirection = ray.getDirection().normalize(false);
-    float t = 0.5f*(unitDirection.getY() + 1f);
+    float t = (unitDirection.getY() + 1f);
     return new Color(1, 1, 1).multi(1.0f-t).add(new Color(0.5f, 0.7f, 1.0f).multi(t), false);
   }
 

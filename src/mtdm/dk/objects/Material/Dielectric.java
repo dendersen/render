@@ -30,7 +30,7 @@ public class Dielectric implements Material {
       direction = Vector.reflect(unitDirection, rec.getNormal());
     else
       direction = Vector.refract(unitDirection, rec.getNormal(), refractionRatio);
-
+    
     Ray scattered = new Ray(rec.getPoint(), direction);
     return new ScatterResult(scattered, outAttenuation);
   }

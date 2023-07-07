@@ -43,6 +43,12 @@ public class PerspectiveWork extends Work{
   public void execute(int maxHit, KDTree renderObjectsTree) {
     Point pixel = new Point(x+adjustedWidth, y+adjustedHeight);
     Color[] listOfColors = new Color[multiSampling];
+    // if(y == 100) {
+    //   int idk = 1;
+    // } else if (y == 200){
+    //   int idk = 2;
+    // }
+
     for (int i = 0; i < multiSampling; i++) {
       float s = ((float) x + (float) adjustedWidth + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedWidth*2); 
       float t = -((float) y + (float) adjustedHeight + ThreadLocalRandom.current().nextFloat()) / (float) (adjustedHeight*2); 

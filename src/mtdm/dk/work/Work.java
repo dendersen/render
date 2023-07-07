@@ -26,6 +26,6 @@ public abstract class Work {
       }
       return Color.Black;
     }
-    return Color.DefaultSky;
+    return Color.skyBox(ray);
   }
 }
